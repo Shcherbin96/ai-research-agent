@@ -7,6 +7,7 @@ import logging
 
 from research_agent.adapters import arxiv as arxiv_adapter
 from research_agent.adapters import github as github_adapter
+from research_agent.adapters import google_scholar as scholar_adapter
 from research_agent.adapters import web_search as web_adapter
 from research_agent.config import DEFAULT_LIMIT_PER_SOURCE
 from research_agent.models import Candidate
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 async def search_node(state: ResearchState) -> dict:
     subqueries = state.get("subqueries") or [state["query"]]
     use_web = state.get("use_web", True)
+    use_scholar = state.get("use_scholar", False)
     limit = state.get("limit_per_source", DEFAULT_LIMIT_PER_SOURCE)
 
     tasks = []
@@ -28,6 +30,8 @@ async def search_node(state: ResearchState) -> dict:
         tasks.append(github_adapter.search(q, limit=max(4, limit // 2)))
         if use_web:
             tasks.append(web_adapter.search(q, limit=max(4, limit // 2)))
+        if use_scholar and scholar_adapter.is_enabled():
+            tasks.append(scholar_adapter.search(q, limit=max(4, limit // 2)))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 

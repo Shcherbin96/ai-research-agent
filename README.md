@@ -115,6 +115,16 @@ If you set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env`, every node
 
 Without these keys, `@observe` is a no-op pass-through and the agent runs unchanged. Sign up free (50K observations/month) at https://cloud.langfuse.com.
 
+## Google Scholar (optional)
+
+If you set `BROWSERBASE_API_KEY` and `BROWSERBASE_PROJECT_ID` in `.env`, you can pass `--scholar` to enable a Google Scholar adapter that drives a cloud Chrome browser via [Browserbase](https://browserbase.com). Scholar has no public API, and Browserbase handles CAPTCHA solving + residential proxies that direct scraping cannot.
+
+```bash
+uv run research-agent run "vector retrieval beyond cosine similarity" --scholar
+```
+
+Scholar runs are billed by Browserbase per session — `--scholar` is off by default to keep eval cycles cheap.
+
 ## Long-term memory (optional)
 
 If you set `MEM0_API_KEY` in `.env`, every completed brief is stored in [Mem0](https://app.mem0.ai/dashboard) tagged with the original query and citation URLs. When you run a new query, the planner retrieves the top-3 semantically-similar past briefs and uses them as warm context — so a follow-up query like *"recent advances in vector retrieval"* can leverage what was already learned about *"agent memory architectures"*.
@@ -160,7 +170,7 @@ Still deferred; tracked on the roadmap below:
 3. ~~GitHub Actions CI~~ ✅
 4. ~~Langfuse traces~~ ✅
 5. ~~Mem0 long-term memory cache~~ ✅
-6. Stagehand + Browserbase / Google Scholar
+6. ~~Browserbase / Google Scholar~~ ✅
 7. Modal or Railway deploy
 8. Grow eval to 50 tasks with pass^4
 9. Pairwise usefulness comparison + regression gate

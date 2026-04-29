@@ -12,5 +12,6 @@ class ResearchState(TypedDict, total=False):
     brief: Brief | None
     errors: list[str]
     use_web: bool
+    use_scholar: bool
     limit_per_source: int
     top_n: int

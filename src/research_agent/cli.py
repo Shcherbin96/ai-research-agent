@@ -97,6 +97,13 @@ def run_cmd(
     no_web: Annotated[
         bool, typer.Option("--no-web", help="Skip Anthropic web_search adapter.")
     ] = False,
+    scholar: Annotated[
+        bool,
+        typer.Option(
+            "--scholar",
+            help="Enable Google Scholar via Browserbase. Requires BROWSERBASE_API_KEY + _PROJECT_ID.",
+        ),
+    ] = False,
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run the research pipeline and write a markdown brief."""
@@ -112,6 +119,7 @@ def run_cmd(
         "query": query,
         "errors": [],
         "use_web": not no_web,
+        "use_scholar": scholar,
         "limit_per_source": limit_per_source,
         "top_n": top_n,
     }
