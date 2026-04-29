@@ -5,12 +5,14 @@ from __future__ import annotations
 import logging
 
 from research_agent.llm import call_sonnet, extract_json_tag
+from research_agent.observability import observe
 from research_agent.prompts import load_prompt
 from research_agent.state import ResearchState
 
 logger = logging.getLogger(__name__)
 
 
+@observe(name="plan_node")
 async def plan_node(state: ResearchState) -> dict:
     query = state["query"]
     system = load_prompt("plan")

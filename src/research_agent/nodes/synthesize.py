@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from research_agent.llm import call_sonnet, extract_json_tag
 from research_agent.models import Brief, Candidate, Citation, ExtractedFact
+from research_agent.observability import observe
 from research_agent.prompts import load_prompt
 from research_agent.state import ResearchState
 
@@ -32,6 +33,7 @@ def _format_facts(facts: list[ExtractedFact], by_url: dict[str, Candidate]) -> s
     return "\n\n".join(lines)
 
 
+@observe(name="synthesize_node")
 async def synthesize_node(state: ResearchState) -> dict:
     query = state["query"]
     facts = state.get("facts") or []

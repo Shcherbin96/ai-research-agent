@@ -109,6 +109,12 @@ Reports land in `eval/reports/<timestamp>-report.{json,md}` and as artifacts in 
 
 The full spec calls for **pass^4** (each task run 4 times, must succeed all 4) and a **pairwise usefulness comparison** between agent versions. These are deferred until the framework is in regular use.
 
+## Observability (optional)
+
+If you set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env`, every node and LLM call is traced to [Langfuse](https://cloud.langfuse.com). Each run shows up as a hierarchical trace: top-level span → 5 node spans (`plan_node`, `search_node`, `rank_node`, `read_node`, `synthesize_node`) → individual LLM calls with token usage and prompts.
+
+Without these keys, `@observe` is a no-op pass-through and the agent runs unchanged. Sign up free (50K observations/month) at https://cloud.langfuse.com.
+
 ## CI
 
 Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
@@ -146,7 +152,7 @@ Still deferred; tracked on the roadmap below:
 1. ~~arXiv PDF reading~~ ✅
 2. ~~Eval pipeline (5 hand-written tasks)~~ ✅
 3. ~~GitHub Actions CI~~ ✅
-4. Langfuse traces
+4. ~~Langfuse traces~~ ✅
 5. Mem0 long-term memory cache
 6. Stagehand + Browserbase / Google Scholar
 7. Modal or Railway deploy

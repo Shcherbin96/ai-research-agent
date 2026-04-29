@@ -10,11 +10,13 @@ from research_agent.adapters import github as github_adapter
 from research_agent.adapters import web_search as web_adapter
 from research_agent.config import DEFAULT_LIMIT_PER_SOURCE
 from research_agent.models import Candidate
+from research_agent.observability import observe
 from research_agent.state import ResearchState
 
 logger = logging.getLogger(__name__)
 
 
+@observe(name="search_node")
 async def search_node(state: ResearchState) -> dict:
     subqueries = state.get("subqueries") or [state["query"]]
     use_web = state.get("use_web", True)

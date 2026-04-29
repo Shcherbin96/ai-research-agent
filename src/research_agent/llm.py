@@ -25,6 +25,7 @@ from research_agent.config import (
     WEB_SEARCH_TOOL_TYPE,
     load_settings,
 )
+from research_agent.observability import observe, update_current_observation
 
 _client: Anthropic | None = None
 
@@ -47,6 +48,31 @@ def _collect_text(content_blocks: list[Any]) -> str:
     return "".join(parts)
 
 
+def _record_usage(model: str, system: str, user: str, response: Any, output: str) -> None:
+    """Attach Anthropic usage data to the current Langfuse observation."""
+    try:
+        usage = getattr(response, "usage", None)
+        usage_details = (
+            {
+                "input": getattr(usage, "input_tokens", None),
+                "output": getattr(usage, "output_tokens", None),
+                "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", None),
+                "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", None),
+            }
+            if usage is not None
+            else None
+        )
+        update_current_observation(
+            model=model,
+            input={"system": system, "user": user},
+            output=output,
+            usage_details=usage_details,
+        )
+    except Exception:
+        pass
+
+
+@observe(name="call_sonnet")
 def call_sonnet(
     *,
     system: str,
@@ -62,9 +88,12 @@ def call_sonnet(
         system=system,
         messages=[{"role": "user", "content": user}],
     )
-    return _collect_text(response.content)
+    text = _collect_text(response.content)
+    _record_usage(SONNET_MODEL, system, user, response, text)
+    return text
 
 
+@observe(name="call_haiku")
 def call_haiku(
     *,
     system: str,
@@ -79,9 +108,12 @@ def call_haiku(
         system=system,
         messages=[{"role": "user", "content": user}],
     )
-    return _collect_text(response.content)
+    text = _collect_text(response.content)
+    _record_usage(HAIKU_MODEL, system, user, response, text)
+    return text
 
 
+@observe(name="call_with_web_search")
 def call_with_web_search(
     *,
     query: str,

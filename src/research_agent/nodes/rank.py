@@ -8,6 +8,7 @@ import logging
 from research_agent.config import DEFAULT_TOP_N_SELECTED
 from research_agent.llm import call_haiku, extract_json_tag
 from research_agent.models import Candidate
+from research_agent.observability import observe
 from research_agent.prompts import load_prompt
 from research_agent.state import ResearchState
 
@@ -22,6 +23,7 @@ def _format_candidates(candidates: list[Candidate]) -> str:
     return "\n".join(lines)
 
 
+@observe(name="rank_node")
 async def rank_node(state: ResearchState) -> dict:
     candidates = state.get("candidates") or []
     top_n = state.get("top_n", DEFAULT_TOP_N_SELECTED)

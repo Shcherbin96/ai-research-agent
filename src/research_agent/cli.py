@@ -14,6 +14,12 @@ import typer
 
 from research_agent.config import DEFAULT_LIMIT_PER_SOURCE, DEFAULT_TOP_N_SELECTED, load_settings
 from research_agent.graph import build_graph
+from research_agent.observability import (
+    flush as langfuse_flush,
+    is_enabled as langfuse_enabled,
+    observe,
+    update_current_trace,
+)
 from research_agent.render import brief_to_markdown
 
 app = typer.Typer(add_completion=False, help="Technical Research Agent — produces a grounded brief.")
@@ -62,9 +68,18 @@ def _slugify(text: str, max_len: int = 60) -> str:
     return text[:max_len] or "query"
 
 
+@observe(name="research_agent.run")
 async def _run(state: dict) -> dict:
     graph = build_graph()
-    return await graph.ainvoke(state)
+    update_current_trace(name=f"research: {state['query'][:80]}", input={"query": state["query"]})
+    result = await graph.ainvoke(state)
+    update_current_trace(
+        output={
+            "n_findings": len(result.get("brief").key_findings) if result.get("brief") else 0,
+            "n_citations": len(result.get("brief").citations) if result.get("brief") else 0,
+        },
+    )
+    return result
 
 
 @app.command("run")
@@ -102,8 +117,13 @@ def run_cmd(
     }
 
     typer.echo(f"Running research pipeline for: {query!r}")
+    if langfuse_enabled():
+        typer.echo("Langfuse tracing: enabled")
     started = time.time()
-    final = asyncio.run(_run(initial_state))
+    try:
+        final = asyncio.run(_run(initial_state))
+    finally:
+        langfuse_flush()
     elapsed = time.time() - started
 
     brief = final.get("brief")

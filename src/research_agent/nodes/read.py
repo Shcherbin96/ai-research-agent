@@ -12,6 +12,7 @@ from research_agent.adapters import github as github_adapter
 from research_agent.config import READ_NODE_CONCURRENCY
 from research_agent.llm import call_sonnet, extract_json_tag
 from research_agent.models import Candidate, ExtractedFact
+from research_agent.observability import observe
 from research_agent.prompts import load_prompt
 from research_agent.state import ResearchState
 
@@ -74,6 +75,7 @@ async def _extract_one(
         return None
 
 
+@observe(name="read_node")
 async def read_node(state: ResearchState) -> dict:
     selected = state.get("selected") or []
     if not selected:
