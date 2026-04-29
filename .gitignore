@@ -1,0 +1,19 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.env
+.env.local
+*.egg-info/
+dist/
+build/
+.DS_Store
+
+briefs/*.md
+!briefs/.gitkeep
+
+# Eval reports — kept as CI artifacts, not committed.
+eval/reports/

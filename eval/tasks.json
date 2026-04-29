@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "tasks": [
+    {
+      "id": "syn-mem0",
+      "kind": "synthetic",
+      "query": "Mem0 architecture for LLM agent memory",
+      "notes": "Mem0 is a well-known agent memory framework with arXiv paper + GitHub repo. A competent run must surface at least one of them.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2504.19413",
+        "https://github.com/mem0ai/mem0"
+      ],
+      "source": ""
+    },
+    {
+      "id": "syn-langgraph",
+      "kind": "synthetic",
+      "query": "LangGraph state machine architecture for multi-step agents",
+      "notes": "LangGraph is a popular agent orchestration framework with public docs and GitHub repo.",
+      "must_have_urls": [
+        "https://github.com/langchain-ai/langgraph"
+      ],
+      "source": ""
+    },
+    {
+      "id": "syn-deepseek-r1",
+      "kind": "synthetic",
+      "query": "DeepSeek R1 reasoning model training methodology",
+      "notes": "DeepSeek-R1 is a high-profile open reasoning model with arXiv paper + GitHub.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2501.12948",
+        "https://github.com/deepseek-ai/DeepSeek-R1"
+      ],
+      "source": ""
+    },
+    {
+      "id": "real-eval-llm-judges",
+      "kind": "real",
+      "query": "How reliable is LLM-as-a-judge for evaluating agent outputs in 2025-2026?",
+      "notes": "Real research question — evaluate whether the agent surfaces specific concerns (position bias, verbosity bias, calibration).",
+      "must_have_urls": [],
+      "source": "Common discussion in r/MachineLearning and on Twitter; included to cover meta-evaluation."
+    },
+    {
+      "id": "real-mcp-vs-tool-use",
+      "kind": "real",
+      "query": "Differences between Model Context Protocol (MCP) and traditional function-calling tool use",
+      "notes": "Real question — should surface the MCP spec, comparison with OpenAI function calling, and tradeoffs.",
+      "must_have_urls": [],
+      "source": "Common HN/Twitter question after MCP launch."
+    }
+  ]
+}
