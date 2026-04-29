@@ -131,6 +131,32 @@ If you set `MEM0_API_KEY` in `.env`, every completed brief is stored in [Mem0](h
 
 Without the key, both `store` and `recall` are no-ops.
 
+## Deploy (optional)
+
+The agent can run as a Modal serverless function with a public HTTPS endpoint.
+
+```bash
+# One-time setup
+uv pip install -e '.[deploy]'  # installs the modal client
+modal token new                 # authenticate
+
+# Configure the required secret (one-time)
+# Modal dashboard → Secrets → New: name "anthropic-api-key", key ANTHROPIC_API_KEY=sk-ant-...
+
+# Deploy
+modal deploy modal_app.py
+```
+
+Modal prints a public URL like `https://<workspace>--ai-research-agent-research.modal.run`. Call it with:
+
+```bash
+curl -X POST https://<workspace>--ai-research-agent-research.modal.run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "agent memory approaches in 2025-2026"}'
+```
+
+The endpoint returns JSON with the rendered markdown brief, run metrics, and the structured `Brief` object. See [`modal_app.py`](modal_app.py) for optional secrets (Langfuse / Mem0 / Browserbase) — uncomment them after configuring.
+
 ## CI
 
 Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
@@ -171,6 +197,6 @@ Still deferred; tracked on the roadmap below:
 4. ~~Langfuse traces~~ ✅
 5. ~~Mem0 long-term memory cache~~ ✅
 6. ~~Browserbase / Google Scholar~~ ✅
-7. Modal or Railway deploy
+7. ~~Modal deploy~~ ✅
 8. Grow eval to 50 tasks with pass^4
 9. Pairwise usefulness comparison + regression gate

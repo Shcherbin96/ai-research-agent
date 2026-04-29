@@ -22,6 +22,11 @@ dependencies = [
 [project.scripts]
 research-agent = "research_agent.cli:app"
 
+[project.optional-dependencies]
+deploy = [
+    "modal>=1.4.2",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
