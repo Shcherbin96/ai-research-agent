@@ -7,6 +7,7 @@ import logging
 from pydantic import ValidationError
 
 from research_agent.llm import call_sonnet, extract_json_tag
+from research_agent.memory import store_brief
 from research_agent.models import Brief, Candidate, Citation, ExtractedFact
 from research_agent.observability import observe
 from research_agent.prompts import load_prompt
@@ -115,4 +116,5 @@ async def synthesize_node(state: ResearchState) -> dict:
         len(brief.citations),
         len(brief.comparison_matrix),
     )
+    store_brief(query, brief)
     return {"brief": brief}

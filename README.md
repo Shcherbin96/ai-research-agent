@@ -115,6 +115,12 @@ If you set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env`, every node
 
 Without these keys, `@observe` is a no-op pass-through and the agent runs unchanged. Sign up free (50K observations/month) at https://cloud.langfuse.com.
 
+## Long-term memory (optional)
+
+If you set `MEM0_API_KEY` in `.env`, every completed brief is stored in [Mem0](https://app.mem0.ai/dashboard) tagged with the original query and citation URLs. When you run a new query, the planner retrieves the top-3 semantically-similar past briefs and uses them as warm context — so a follow-up query like *"recent advances in vector retrieval"* can leverage what was already learned about *"agent memory architectures"*.
+
+Without the key, both `store` and `recall` are no-ops.
+
 ## CI
 
 Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
@@ -153,7 +159,7 @@ Still deferred; tracked on the roadmap below:
 2. ~~Eval pipeline (5 hand-written tasks)~~ ✅
 3. ~~GitHub Actions CI~~ ✅
 4. ~~Langfuse traces~~ ✅
-5. Mem0 long-term memory cache
+5. ~~Mem0 long-term memory cache~~ ✅
 6. Stagehand + Browserbase / Google Scholar
 7. Modal or Railway deploy
 8. Grow eval to 50 tasks with pass^4
