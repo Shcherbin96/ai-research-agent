@@ -40,9 +40,10 @@ def get_client() -> Anthropic:
     global _client
     if _client is None:
         settings = load_settings()
-        # max_retries=4 + the SDK's exponential backoff is the safety net for 429s
-        # that slip past per-node concurrency throttling.
-        _client = Anthropic(api_key=settings.anthropic_api_key, max_retries=4)
+        # max_retries=6 with exponential backoff (1+2+4+8+16+32 = 63s) is enough
+        # for the Anthropic Tier-1 30k-tokens/min budget to reset once mid-retry,
+        # which is what we need when read_node bursts past the cap on cloud IPs.
+        _client = Anthropic(api_key=settings.anthropic_api_key, max_retries=6)
     return _client
 
 

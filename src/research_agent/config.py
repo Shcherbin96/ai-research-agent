@@ -22,9 +22,12 @@ GITHUB_README_TRUNCATE = 4000
 # ≈ 8k input tokens — fits comfortably under Tier-1 30k/min with concurrency=2.
 ARXIV_PDF_TRUNCATE = 12000
 
-# Max concurrent calls in read_node. Tuned to fit Tier-1 Anthropic limits
-# (30k input tokens/min): 2 × ~8k tokens/call leaves headroom for retries.
-READ_NODE_CONCURRENCY = 2
+# Max concurrent calls in read_node. Reduced to 1 because cloud IPs (Modal,
+# GitHub Actions) ALSO compete for the org-wide Anthropic Tier-1 budget, so
+# even concurrency=2 routinely blew past 30k tokens/min when 5-6 reads landed
+# in the same minute. Concurrency=1 + 5s arxiv-PDF fetches between calls
+# spaces requests enough that the SDK's max_retries=6 reliably recovers.
+READ_NODE_CONCURRENCY = 1
 
 
 @dataclass(frozen=True)

@@ -120,20 +120,23 @@ def _run_pipeline(payload: dict) -> dict:
         cache_read_tokens += c["usage"].get("cache_read", 0)
         cache_creation_tokens += c["usage"].get("cache_creation", 0)
 
-    # Persist for shareable link.
+    # Persist for shareable link, but only if the brief has actual findings —
+    # no point sharing an empty rate-limited result.
     import secrets as _secrets
     import time as _time
-    brief_id = _secrets.token_urlsafe(8)
-    try:
-        briefs_store[brief_id] = {
-            "brief": brief.model_dump(mode="json"),
-            "brief_markdown": brief_to_markdown(brief),
-            "query": query,
-            "elapsed_sec": round(elapsed, 1),
-            "saved_at": _time.time(),
-        }
-    except Exception:
-        brief_id = None
+    brief_id = None
+    if len(brief.key_findings) > 0:
+        brief_id = _secrets.token_urlsafe(8)
+        try:
+            briefs_store[brief_id] = {
+                "brief": brief.model_dump(mode="json"),
+                "brief_markdown": brief_to_markdown(brief),
+                "query": query,
+                "elapsed_sec": round(elapsed, 1),
+                "saved_at": _time.time(),
+            }
+        except Exception:
+            brief_id = None
 
     return {
         "query": query,
@@ -249,8 +252,13 @@ def research():
             import time as _time
             try:
                 async for ev in stream_pipeline(state):
-                    # On the final result event, persist the brief and inject brief_id.
-                    if ev.get("type") == "result" and ev.get("brief"):
+                    # On the final result event, persist the brief and inject brief_id —
+                    # but only if it has real findings (don't share rate-limited empties).
+                    if (
+                        ev.get("type") == "result"
+                        and ev.get("brief")
+                        and ev.get("n_findings", 0) > 0
+                    ):
                         brief_id = _secrets.token_urlsafe(8)
                         try:
                             briefs_store[brief_id] = {
