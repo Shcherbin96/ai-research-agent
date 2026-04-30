@@ -5,6 +5,16 @@
 
 > Production-grade AI agent that researches a technical topic on demand and returns a grounded markdown brief with inline citations.
 
+**Try it live** (deployed on Modal):
+
+```bash
+curl -X POST https://romanserbin96--ai-research-agent-research.modal.run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "agent memory approaches in 2025-2026"}'
+```
+
+A typical run: ~60-120 seconds, 5-10 citations, fully grounded against arXiv papers + GitHub READMEs + Anthropic web_search results.
+
 This is the MVP slice of the project described in [`01-technical-research-agent.md`](01-technical-research-agent.md). The full project also adds an eval pipeline (50 tasks, pass^4, LLM-as-judge), GitHub Actions CI, Mem0 long-term memory, Langfuse observability, and a Stagehand+Browserbase Google Scholar adapter — see "Roadmap" below.
 
 ## What it does
