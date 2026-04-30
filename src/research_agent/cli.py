@@ -146,6 +146,13 @@ def run_cmd(
             help="Enable Google Scholar via Browserbase. Requires BROWSERBASE_API_KEY + _PROJECT_ID.",
         ),
     ] = False,
+    quality: Annotated[
+        str,
+        typer.Option(
+            "--quality",
+            help="'fast' uses Haiku for read+web_search (default); 'high' uses Sonnet everywhere.",
+        ),
+    ] = "fast",
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run the research pipeline and write a markdown brief."""
@@ -164,6 +171,7 @@ def run_cmd(
         "use_scholar": scholar,
         "limit_per_source": limit_per_source,
         "top_n": top_n,
+        "quality": quality,
     }
 
     typer.echo(f"Running research pipeline for: {query!r}")

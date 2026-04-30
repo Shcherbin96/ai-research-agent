@@ -16,6 +16,13 @@ class ResearchState(TypedDict, total=False):
     limit_per_source: int
     top_n: int
 
+    # "fast" (default) routes read_node + web_search to Haiku 4.5 — cheaper and
+    # frees up the Sonnet input-token budget for the heavier plan + synthesize
+    # stages. "quality" puts everything on Sonnet 4.6 (slightly better verbatim
+    # quote extraction, ~3x cost). The deployed demo defaults to "fast" so it
+    # works reliably at Anthropic Tier 1.
+    quality: str
+
     # Self-correction loop. ``verify_support_rate`` carries the verifier's score.
     # ``synthesize_attempts`` counts how many times synthesize_node has run, so the
     # graph's conditional edge can stop after the configured retry budget.

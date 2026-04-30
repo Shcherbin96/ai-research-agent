@@ -86,8 +86,11 @@ def _run_pipeline(payload: dict) -> dict:
         "errors": [],
         "use_web": payload.get("use_web", True),
         "use_scholar": payload.get("use_scholar", False),
-        "limit_per_source": payload.get("limit_per_source", 10),
-        "top_n": payload.get("top_n", 10),
+        # Defaults tuned for the public demo on Anthropic Tier 1: smaller fan-out
+        # keeps total per-run input tokens under ~30k, which avoids the burst cap.
+        "limit_per_source": payload.get("limit_per_source", 6),
+        "top_n": payload.get("top_n", 6),
+        "quality": payload.get("quality", "fast"),
     }
 
     graph = build_graph()

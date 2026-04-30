@@ -243,16 +243,15 @@ def call_with_web_search(
     query: str,
     max_uses: int = 3,
     max_tokens: int = 2048,
+    model: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Run Sonnet with the server-side ``web_search`` tool and return raw results.
+    """Run a model with the server-side ``web_search`` tool and return raw results.
 
-    The Anthropic API executes the search server-side. The assistant turn comes back
-    with one or more ``web_search_tool_result`` content blocks; each carries a
-    ``content`` list of items with at least ``url``, ``title``, and an
-    ``encrypted_content`` snippet. We flatten and dedupe by URL.
+    Defaults to Haiku 4.5 — the model just dispatches the tool call and returns
+    raw results, no reasoning needed. Caller can override via ``model``.
     """
     response = get_client().messages.create(
-        model=SONNET_MODEL,
+        model=model or HAIKU_MODEL,
         max_tokens=max_tokens,
         system=(
             "You are a research assistant. Use the web_search tool to find sources "

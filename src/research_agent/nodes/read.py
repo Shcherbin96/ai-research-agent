@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from research_agent.adapters import arxiv as arxiv_adapter
 from research_agent.adapters import github as github_adapter
 from research_agent.config import READ_NODE_CONCURRENCY
-from research_agent.llm import call_sonnet, extract_json_tag
+from research_agent.llm import call_haiku, call_sonnet, extract_json_tag
 from research_agent.models import Candidate, ExtractedFact
 from research_agent.observability import observe
 from research_agent.prompts import load_prompt
@@ -39,7 +39,10 @@ async def _body_for(c: Candidate) -> str:
 
 
 async def _extract_one(
-    c: Candidate, system: str, semaphore: asyncio.Semaphore
+    c: Candidate,
+    system: str,
+    semaphore: asyncio.Semaphore,
+    quality: str,
 ) -> ExtractedFact | None:
     body = await _body_for(c)
     if not body.strip():
@@ -52,13 +55,16 @@ async def _extract_one(
         f"Source type: {c.source}\n\n"
         f"Body:\n{body}"
     )
+    # In "fast" mode we use Haiku for fact extraction — much cheaper and
+    # frees up the Sonnet input-token budget. Haiku's instruction-following
+    # on the "verbatim quote" rule is slightly weaker (it'll return empty
+    # quote lists more often when it can't find an exact substring), which
+    # is acceptable: the read.md prompt's contract is "empty over paraphrase"
+    # so grounding stays intact, the brief just gets fewer blockquote pulls.
+    call_fn = call_sonnet if quality == "quality" else call_haiku
     async with semaphore:
-        # cache_system=True: read_node's ~1500-token system prompt is identical
-        # across all source-extraction calls in this run. With Anthropic's 5-min
-        # ephemeral cache, the second-through-Nth call pay 0.1x input price on
-        # the system portion — typical 60-80% input cost reduction at this stage.
         raw = await asyncio.to_thread(
-            call_sonnet,
+            call_fn,
             system=system,
             user=user,
             max_tokens=1024,
@@ -93,8 +99,9 @@ async def read_node(state: ResearchState) -> dict:
 
     system = load_prompt("read")
     semaphore = asyncio.Semaphore(READ_NODE_CONCURRENCY)
+    quality = state.get("quality", "fast")
     results = await asyncio.gather(
-        *[_extract_one(c, system, semaphore) for c in selected],
+        *[_extract_one(c, system, semaphore, quality) for c in selected],
         return_exceptions=True,
     )
 
