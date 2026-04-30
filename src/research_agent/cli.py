@@ -61,6 +61,47 @@ def eval_cmd(
     typer.echo(f"\nWrote {json_path}\nWrote {md_path}")
 
 
+@app.command("eval-passk")
+def eval_passk_cmd(
+    task: Annotated[
+        list[str] | None,
+        typer.Option("--task", help="Run only these task ids (repeatable)."),
+    ] = None,
+    k: Annotated[int, typer.Option("--k", help="Number of runs per task (default 4).")] = 4,
+    output_dir: Annotated[
+        Path, typer.Option("--output-dir", help="Where to write report JSON + markdown.")
+    ] = Path("eval/reports"),
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Run pass^k reliability eval — each task k times, must pass all k."""
+    import asyncio as _asyncio
+
+    from research_agent.eval.runner import (
+        render_pass_k_markdown,
+        run_pass_k,
+        write_report,
+    )
+
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    load_settings()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    typer.echo(f"Running pass^{k} eval...")
+    report = _asyncio.run(run_pass_k(k=k, task_filter=task))
+
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    json_path = output_dir / f"{timestamp}-passk-report.json"
+    md_path = output_dir / f"{timestamp}-passk-report.md"
+    write_report(report, json_path)
+    md_path.write_text(render_pass_k_markdown(report), encoding="utf-8")
+
+    typer.echo(render_pass_k_markdown(report))
+    typer.echo(f"\nWrote {json_path}\nWrote {md_path}")
+
+
 def _slugify(text: str, max_len: int = 60) -> str:
     text = text.lower()
     text = re.sub(r"[^a-z0-9\s-]", "", text)

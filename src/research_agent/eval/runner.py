@@ -40,6 +40,36 @@ class TaskResult:
     errors: list[str] = field(default_factory=list)
 
 
+# Thresholds for "is this run a pass?" used by pass^k.
+# A run passes when its brief is non-trivially populated AND its support rate is
+# at least PASS_SUPPORT_FLOOR. For synthetic tasks we additionally require
+# recall >= PASS_RECALL_FLOOR.
+PASS_SUPPORT_FLOOR = 0.5
+PASS_RECALL_FLOOR = 0.5
+PASS_MIN_FINDINGS = 3
+
+
+def _is_passing(r: TaskResult) -> bool:
+    if r.n_findings < PASS_MIN_FINDINGS:
+        return False
+    if r.support_rate < PASS_SUPPORT_FLOOR:
+        return False
+    if r.recall is not None and r.recall < PASS_RECALL_FLOOR:
+        return False
+    return True
+
+
+@dataclass
+class PassKResult:
+    task_id: str
+    kind: str
+    query: str
+    k: int
+    runs: list[TaskResult]
+    n_passing: int
+    pass_k: bool  # all k runs passing
+
+
 @dataclass
 class EvalReport:
     started_at: str
@@ -48,6 +78,17 @@ class EvalReport:
     avg_support_rate: float
     avg_recall: float | None
     results: list[TaskResult]
+
+
+@dataclass
+class PassKReport:
+    started_at: str
+    finished_at: str
+    n_tasks: int
+    k: int
+    pass_k_rate: float  # fraction of tasks where all k runs passed
+    avg_run_pass_rate: float  # fraction of all (task, run) pairs that passed
+    results: list[PassKResult]
 
 
 def _normalize(url: str) -> str:
@@ -207,12 +248,132 @@ async def run_eval(
     )
 
 
-def write_report(report: EvalReport, path: Path) -> None:
+def write_report(report: EvalReport | PassKReport, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps({**asdict(report)}, indent=2, default=str),
         encoding="utf-8",
     )
+
+
+async def run_pass_k(
+    k: int = 4,
+    task_filter: list[str] | None = None,
+    dataset_path: Path | None = None,
+) -> PassKReport:
+    """Run each task ``k`` times back-to-back; ``pass_k`` is True iff all pass.
+
+    The full pipeline is rerun from scratch each time (plan → ... → synthesize),
+    not just judged again — the goal is to measure end-to-end reliability under
+    non-determinism (LLM sampling, search ordering, rate-limit retries).
+    """
+    ds = load_dataset(dataset_path)
+    tasks = ds.tasks
+    if task_filter:
+        wanted = set(task_filter)
+        tasks = [t for t in tasks if t.id in wanted]
+        if not tasks:
+            raise ValueError(f"No tasks matched filter {task_filter}")
+
+    started = datetime.now()
+    results: list[PassKResult] = []
+
+    for t_idx, task in enumerate(tasks):
+        if t_idx > 0:
+            await asyncio.sleep(45)  # rate-limit budget recovery between tasks
+        runs: list[TaskResult] = []
+        for run_idx in range(k):
+            if run_idx > 0:
+                await asyncio.sleep(45)  # also between runs of the same task
+            logger.info(
+                "pass^%d: task %s run %d/%d", k, task.id, run_idx + 1, k
+            )
+            try:
+                r = await _run_one(task)
+            except Exception as exc:
+                logger.exception("pass^k: task %s run %d crashed", task.id, run_idx + 1)
+                r = TaskResult(
+                    task_id=task.id,
+                    kind=task.kind,
+                    query=task.query,
+                    duration_sec=0.0,
+                    n_candidates=0,
+                    n_selected=0,
+                    n_facts=0,
+                    n_findings=0,
+                    n_citations=0,
+                    support_rate=0.0,
+                    recall=0.0 if task.kind == "synthetic" else None,
+                    errors=[f"crash: {exc!r}"],
+                )
+            runs.append(r)
+            logger.info(
+                "pass^%d: %s run %d done — support=%.2f recall=%s findings=%d (passing=%s)",
+                k,
+                task.id,
+                run_idx + 1,
+                r.support_rate,
+                f"{r.recall:.2f}" if r.recall is not None else "—",
+                r.n_findings,
+                _is_passing(r),
+            )
+
+        n_passing = sum(1 for r in runs if _is_passing(r))
+        pk = PassKResult(
+            task_id=task.id,
+            kind=task.kind,
+            query=task.query,
+            k=k,
+            runs=runs,
+            n_passing=n_passing,
+            pass_k=n_passing == k,
+        )
+        results.append(pk)
+
+    total_runs = sum(len(p.runs) for p in results)
+    total_passing = sum(p.n_passing for p in results)
+    pass_k_count = sum(1 for p in results if p.pass_k)
+
+    return PassKReport(
+        started_at=started.isoformat(timespec="seconds"),
+        finished_at=datetime.now().isoformat(timespec="seconds"),
+        n_tasks=len(results),
+        k=k,
+        pass_k_rate=(pass_k_count / len(results)) if results else 0.0,
+        avg_run_pass_rate=(total_passing / total_runs) if total_runs else 0.0,
+        results=results,
+    )
+
+
+def render_pass_k_markdown(report: PassKReport) -> str:
+    lines = [
+        f"# Pass^{report.k} reliability report",
+        "",
+        f"- Started: {report.started_at}",
+        f"- Finished: {report.finished_at}",
+        f"- Tasks: {report.n_tasks} (each run {report.k}×)",
+        f"- **Pass^{report.k} rate: {report.pass_k_rate:.2%}** (tasks where all {report.k} runs passed)",
+        f"- Per-run pass rate: {report.avg_run_pass_rate:.2%}",
+        "",
+        "## Per-task",
+        "",
+    ]
+    header = "| id | kind | " + " | ".join(f"run {i + 1}" for i in range(report.k)) + " | pass^k |"
+    sep = "| --- | --- | " + " | ".join("---" for _ in range(report.k)) + " | --- |"
+    lines.extend([header, sep])
+    for p in report.results:
+        cells = []
+        for r in p.runs:
+            ok = _is_passing(r)
+            cells.append(
+                f"{'✓' if ok else '✗'} ({r.support_rate:.0%}/{int(r.n_findings)}f)"
+            )
+        lines.append(
+            f"| `{p.task_id}` | {p.kind} | "
+            + " | ".join(cells)
+            + f" | {'**✓**' if p.pass_k else '✗'} |"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def render_markdown(report: EvalReport) -> str:

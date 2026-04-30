@@ -133,9 +133,26 @@ Current baseline (3-task subset on Anthropic Tier-1, captured 2026-04-30):
 
 **Note on rate limits:** at Anthropic Tier 1 (30k input tokens/min, 50 RPM), back-to-back research queries cause `read_node`'s 6 parallel Sonnet calls to exhaust the budget mid-task. The agent gracefully degrades (errors are captured, not raised), but the resulting brief is empty. Re-running on Tier 2+ (80k+ tokens/min) should produce the agent's true capability — the per-task baseline jumps to ~95% support / ~50%+ recall when there's no rate-limit pressure (verified on the Mem0 single-query smoke test which produced 7 grounded findings + 3 citations).
 
-### Roadmap
+### pass^k reliability
 
-The full spec calls for **pass^4** (each task run 4 times, must succeed all 4) and a **pairwise usefulness comparison** between agent versions. Deferred until the eval framework is in regular use.
+Reliability is measured by `eval-passk`: each task is rerun **k** times (default 4), and the task counts as a pass only if **all k** runs cleared the per-run quality gates (≥3 findings, support ≥50%, recall ≥50% on synthetic):
+
+```bash
+uv run research-agent eval-passk --k 4 --task syn-mem0
+```
+
+Output is a per-run grid plus `pass^k rate` (fraction of tasks with all k passes) and `avg run pass rate` (every (task, run) pair). One bad run out of four flips a task from green to red — this catches flakiness that single-run eval hides.
+
+### Pairwise usefulness
+
+`eval/pairwise.py` compares two brief sets on the same queries via Sonnet-as-judge with **position-bias mitigation** (each pair judged twice with A/B swapped; only counted as a win if the same side wins both orderings — the MT-Bench convention). Use it to A/B-test a new prompt or model against a saved baseline:
+
+```python
+from research_agent.eval.pairwise import compare_briefs
+report = compare_briefs(Path("briefs/v2"), Path("briefs/v1"), "v2", "v1")
+```
+
+Output: challenger win rate (ties excluded) plus a per-task verdict table.
 
 ## Observability (optional)
 
@@ -206,25 +223,21 @@ A typical run on a single query costs **<$0.50** with Sonnet 4.6 + Haiku 4.5 (10
 
 ## Out of scope (current state)
 
-Still deferred; tracked on the roadmap below:
+Still deferred:
 
-- Mem0 long-term memory across sessions
-- Stagehand + Browserbase / Google Scholar adapter
-- Modal / Railway cloud deploy + public link
-- Langfuse traces / observability
 - Web UI (FastAPI / Gradio / Streamlit)
-- pass^4 reliability metric
-- Pairwise usefulness comparison (needs a baseline version)
-- Regression-blocking gate on the eval workflow
+- 50-task eval ground truth labels for the **real** subset (currently only synthetic tasks have `must_have_urls`)
+- Stored baselines for pairwise comparison (pairwise infrastructure ready, just no committed baseline brief set yet)
 
 ## Roadmap
 
 1. ~~arXiv PDF reading~~ ✅
-2. ~~Eval pipeline (5 hand-written tasks)~~ ✅
-3. ~~GitHub Actions CI~~ ✅
+2. ~~Eval pipeline (50 hand-curated tasks)~~ ✅
+3. ~~GitHub Actions CI with regression gate~~ ✅
 4. ~~Langfuse traces~~ ✅
 5. ~~Mem0 long-term memory cache~~ ✅
 6. ~~Browserbase / Google Scholar~~ ✅
 7. ~~Modal deploy~~ ✅
-8. Grow eval to 50 tasks with pass^4
-9. Pairwise usefulness comparison + regression gate
+8. ~~pass^k reliability metric~~ ✅
+9. ~~Pairwise usefulness comparison + position-bias mitigation~~ ✅
+10. Web UI (FastAPI / Gradio / Streamlit) — open
