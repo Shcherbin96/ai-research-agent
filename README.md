@@ -106,7 +106,7 @@ briefs/             output (gitignored)
 
 ## Eval
 
-The agent ships with a hand-curated eval suite at [`eval/tasks.json`](eval/tasks.json) — 10 tasks (six synthetic with known ground-truth URLs, four real research questions). Run it with:
+The agent ships with a hand-curated eval suite at [`eval/tasks.json`](eval/tasks.json) — **50 tasks** (25 synthetic with known ground-truth URLs, 25 real research questions pulled from r/MachineLearning, HN, and engineering blogs). Run it with:
 
 ```bash
 uv run research-agent eval                          # all 10 tasks
@@ -190,7 +190,7 @@ The endpoint returns JSON with the rendered markdown brief, run metrics, and the
 Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
 
 - **[`tests.yml`](.github/workflows/tests.yml)** — runs ruff + pytest on every push/PR.
-- **[`eval.yml`](.github/workflows/eval.yml)** — runs the full eval suite on PRs that touch `src/`, `prompts/`, or `eval/`. Posts the markdown report as a PR comment and uploads JSON as an artifact. Eval needs `ANTHROPIC_API_KEY` configured as a repo secret.
+- **[`eval.yml`](.github/workflows/eval.yml)** — runs the eval on PRs that touch `src/`, `prompts/`, or `eval/`. By default uses a **5-task subset** for cost control (~$3, ~10 min). To run the full **50-task sweep** (~$25-30, ~45 min), either trigger the workflow manually (`workflow_dispatch`) or add the `full-eval` label to a PR. Posts metrics as a PR comment and uploads the JSON report as an artifact. Needs `ANTHROPIC_API_KEY` as a repo secret.
 
 ## Tests
 

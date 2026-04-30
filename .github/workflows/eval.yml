@@ -32,10 +32,27 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run eval
+      - name: Run eval (CI subset)
+        if: github.event_name != 'workflow_dispatch' && !contains(github.event.pull_request.labels.*.name, 'full-eval')
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN || github.token }}
+        # Fast subset (~$3, ~10 min) — 5 representative tasks. PRs run this by default.
+        run: |
+          uv run research-agent eval \
+            --task syn-mem0 \
+            --task syn-langgraph \
+            --task syn-vllm \
+            --task real-mcp-vs-tool-use \
+            --task real-rag-vs-long-context \
+            --output-dir eval/reports
+
+      - name: Run eval (full 50 tasks)
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'full-eval')
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN || github.token }}
+        # Full sweep (~$25-30, ~45 min) — manual trigger or 'full-eval' PR label.
         run: uv run research-agent eval --output-dir eval/reports
 
       - name: Regression check

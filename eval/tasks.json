@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "1.0.0",
   "tasks": [
     {
       "id": "syn-mem0",
@@ -9,29 +9,26 @@
       "must_have_urls": [
         "https://arxiv.org/abs/2504.19413",
         "https://github.com/mem0ai/mem0"
-      ],
-      "source": ""
+      ]
     },
     {
       "id": "syn-langgraph",
       "kind": "synthetic",
       "query": "LangGraph state machine architecture for multi-step agents",
-      "notes": "LangGraph is a popular agent orchestration framework with public docs and GitHub repo.",
+      "notes": "LangGraph is a popular agent orchestration framework.",
       "must_have_urls": [
         "https://github.com/langchain-ai/langgraph"
-      ],
-      "source": ""
+      ]
     },
     {
       "id": "syn-deepseek-r1",
       "kind": "synthetic",
       "query": "DeepSeek R1 reasoning model training methodology",
-      "notes": "DeepSeek-R1 is a high-profile open reasoning model with arXiv paper + GitHub.",
+      "notes": "DeepSeek-R1 is a high-profile open reasoning model.",
       "must_have_urls": [
         "https://arxiv.org/abs/2501.12948",
         "https://github.com/deepseek-ai/DeepSeek-R1"
-      ],
-      "source": ""
+      ]
     },
     {
       "id": "syn-llama-3",
@@ -40,62 +37,377 @@
       "notes": "Meta's Llama 3 has the canonical 'herd of models' arXiv paper.",
       "must_have_urls": [
         "https://arxiv.org/abs/2407.21783"
-      ],
-      "source": ""
+      ]
     },
     {
       "id": "syn-vllm",
       "kind": "synthetic",
       "query": "vLLM PagedAttention serving framework architecture",
-      "notes": "vLLM with PagedAttention has both an SOSP paper (arXiv) and a GitHub repo.",
+      "notes": "vLLM with PagedAttention has both an SOSP paper and a GitHub repo.",
       "must_have_urls": [
         "https://arxiv.org/abs/2309.06180",
         "https://github.com/vllm-project/vllm"
-      ],
-      "source": ""
+      ]
     },
     {
       "id": "syn-dspy",
       "kind": "synthetic",
       "query": "DSPy framework for compiling LLM programs",
-      "notes": "DSPy is Stanford's framework for declarative LLM pipelines with paper + active GitHub.",
+      "notes": "Stanford's framework for declarative LLM pipelines.",
       "must_have_urls": [
         "https://arxiv.org/abs/2310.03714",
         "https://github.com/stanfordnlp/dspy"
-      ],
-      "source": ""
+      ]
+    },
+    {
+      "id": "syn-flash-attention",
+      "kind": "synthetic",
+      "query": "FlashAttention IO-aware exact attention algorithm",
+      "notes": "Tri Dao's FlashAttention paper is the canonical reference.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2205.14135",
+        "https://github.com/Dao-AILab/flash-attention"
+      ]
+    },
+    {
+      "id": "syn-mamba",
+      "kind": "synthetic",
+      "query": "Mamba selective state space model linear scaling",
+      "notes": "Mamba is the canonical selective SSM paper from Gu and Dao.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2312.00752",
+        "https://github.com/state-spaces/mamba"
+      ]
+    },
+    {
+      "id": "syn-rwkv",
+      "kind": "synthetic",
+      "query": "RWKV recurrent linear attention transformer alternative",
+      "notes": "RWKV combines RNN inference with transformer training.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2305.13048",
+        "https://github.com/BlinkDL/RWKV-LM"
+      ]
+    },
+    {
+      "id": "syn-whisper",
+      "kind": "synthetic",
+      "query": "Whisper speech recognition robust large-scale weak supervision",
+      "notes": "OpenAI Whisper paper + repo.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2212.04356",
+        "https://github.com/openai/whisper"
+      ]
+    },
+    {
+      "id": "syn-stable-diffusion-3",
+      "kind": "synthetic",
+      "query": "Stable Diffusion 3 rectified flow MMDiT architecture",
+      "notes": "Stability's SD3 paper.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2403.03206"
+      ]
+    },
+    {
+      "id": "syn-grpo",
+      "kind": "synthetic",
+      "query": "GRPO group relative policy optimization for reasoning models",
+      "notes": "GRPO is the RL variant introduced for DeepSeek-Math/R1.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2402.03300"
+      ]
+    },
+    {
+      "id": "syn-dpo",
+      "kind": "synthetic",
+      "query": "Direct Preference Optimization DPO without reward model",
+      "notes": "DPO Stanford paper, replaces RLHF reward modeling.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2305.18290"
+      ]
+    },
+    {
+      "id": "syn-llm-as-judge-paper",
+      "kind": "synthetic",
+      "query": "LLM-as-a-judge MT-Bench Chatbot Arena evaluation",
+      "notes": "MT-Bench introduces LLM-as-judge with pairwise comparison.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2306.05685"
+      ]
+    },
+    {
+      "id": "syn-toolformer",
+      "kind": "synthetic",
+      "query": "Toolformer self-supervised tool use language model",
+      "notes": "Meta's Toolformer paper.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2302.04761"
+      ]
+    },
+    {
+      "id": "syn-react",
+      "kind": "synthetic",
+      "query": "ReAct synergizing reasoning and acting in language models",
+      "notes": "Princeton/Google ReAct paper — one of the foundational agent papers.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2210.03629"
+      ]
+    },
+    {
+      "id": "syn-chain-of-thought",
+      "kind": "synthetic",
+      "query": "Chain of thought prompting reasoning emergent",
+      "notes": "Google Brain CoT paper, foundational for reasoning research.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2201.11903"
+      ]
+    },
+    {
+      "id": "syn-rag-original",
+      "kind": "synthetic",
+      "query": "Retrieval-augmented generation original paper Lewis 2020",
+      "notes": "Original RAG paper from Meta AI / FAIR.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2005.11401"
+      ]
+    },
+    {
+      "id": "syn-instructgpt",
+      "kind": "synthetic",
+      "query": "InstructGPT training language models human feedback RLHF",
+      "notes": "OpenAI's InstructGPT paper, the basis of ChatGPT alignment.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2203.02155"
+      ]
+    },
+    {
+      "id": "syn-constitutional-ai",
+      "kind": "synthetic",
+      "query": "Constitutional AI harmlessness AI feedback Anthropic",
+      "notes": "Anthropic's CAI paper.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2212.08073"
+      ]
+    },
+    {
+      "id": "syn-langchain",
+      "kind": "synthetic",
+      "query": "LangChain framework chains agents memory composition",
+      "notes": "LangChain is the most popular LLM framework.",
+      "must_have_urls": [
+        "https://github.com/langchain-ai/langchain"
+      ]
+    },
+    {
+      "id": "syn-llamaindex",
+      "kind": "synthetic",
+      "query": "LlamaIndex data framework retrieval augmented LLM",
+      "notes": "LlamaIndex is the leading data-framework competitor to LangChain.",
+      "must_have_urls": [
+        "https://github.com/run-llama/llama_index"
+      ]
+    },
+    {
+      "id": "syn-agentic-rag",
+      "kind": "synthetic",
+      "query": "Self-RAG self-reflective retrieval-augmented generation",
+      "notes": "Self-RAG paper from UW.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2310.11511"
+      ]
+    },
+    {
+      "id": "syn-orca",
+      "kind": "synthetic",
+      "query": "Orca progressive learning explanations LLM distillation",
+      "notes": "Microsoft's Orca paper on reasoning distillation.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2306.02707"
+      ]
+    },
+    {
+      "id": "syn-mixtral",
+      "kind": "synthetic",
+      "query": "Mixtral 8x7B sparse mixture of experts",
+      "notes": "Mistral's Mixtral paper.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2401.04088"
+      ]
     },
     {
       "id": "real-eval-llm-judges",
       "kind": "real",
       "query": "How reliable is LLM-as-a-judge for evaluating agent outputs in 2025-2026?",
-      "notes": "Should surface position bias, verbosity bias, calibration concerns from recent research.",
-      "must_have_urls": [],
-      "source": "Common discussion in r/MachineLearning and on Twitter."
+      "notes": "Should surface position bias, verbosity bias, calibration concerns.",
+      "source": "Recurring discussion in r/MachineLearning."
     },
     {
       "id": "real-mcp-vs-tool-use",
       "kind": "real",
       "query": "Differences between Model Context Protocol (MCP) and traditional function-calling tool use",
-      "notes": "Should surface the MCP spec, comparison with OpenAI function calling, and tradeoffs.",
-      "must_have_urls": [],
+      "notes": "Should surface MCP spec, tradeoffs, when to use each.",
       "source": "Common HN/Twitter question after MCP launch."
     },
     {
       "id": "real-rag-vs-long-context",
       "kind": "real",
       "query": "RAG vs long-context windows: when does each approach win in 2025-2026?",
-      "notes": "Persistent practical debate. Should surface specific tradeoffs (cost, latency, recall, freshness).",
-      "must_have_urls": [],
+      "notes": "Engineering tradeoffs (cost, latency, recall, freshness).",
       "source": "Common engineering question on HN and r/LocalLLaMA."
     },
     {
       "id": "real-agent-pass-k",
       "kind": "real",
       "query": "Reliability metrics for AI agents: what is pass^k and how is it measured?",
-      "notes": "Specific to eval-driven AI engineering. Should surface OpenAI/Anthropic blogposts and recent papers.",
-      "must_have_urls": [],
+      "notes": "Specific to eval-driven engineering. Anthropic / OpenAI blog content.",
       "source": "Anthropic and OpenAI engineering blogs from 2025."
+    },
+    {
+      "id": "real-context-rot",
+      "kind": "real",
+      "query": "Context rot in long-context language models lost in the middle",
+      "notes": "Should surface 'lost in the middle' / U-shaped recall curves.",
+      "source": "Stanford NLP and Anthropic research from 2024-2025."
+    },
+    {
+      "id": "real-prompt-caching",
+      "kind": "real",
+      "query": "Anthropic prompt caching cost savings best practices",
+      "notes": "Should surface Anthropic docs on cache_control, 5-minute TTL, structured prompts.",
+      "source": "Anthropic engineering blog and pricing pages."
+    },
+    {
+      "id": "real-cline-vs-cursor",
+      "kind": "real",
+      "query": "Comparison of AI coding agents Cline vs Cursor vs Aider",
+      "notes": "Engineering tradeoffs for AI-assisted coding tools.",
+      "source": "Frequent discussion on r/LocalLLaMA and Twitter."
+    },
+    {
+      "id": "real-agent-loops",
+      "kind": "real",
+      "query": "How to prevent agent infinite loops and runaway tool calls in production",
+      "notes": "Should surface step limits, budget gates, observability patterns.",
+      "source": "Production engineering discussion."
+    },
+    {
+      "id": "real-fine-tune-vs-rag",
+      "kind": "real",
+      "query": "Fine-tuning vs RAG for domain-specific knowledge: tradeoffs in 2025",
+      "notes": "Common practical engineering decision.",
+      "source": "r/MachineLearning weekly discussion threads."
+    },
+    {
+      "id": "real-quantization-state",
+      "kind": "real",
+      "query": "Quantization techniques for LLM serving GPTQ AWQ FP8 in 2025",
+      "notes": "Should surface specific quantization methods and tradeoffs.",
+      "source": "r/LocalLLaMA and vLLM blog."
+    },
+    {
+      "id": "real-multimodal-agents",
+      "kind": "real",
+      "query": "Multimodal agents that can see and click: state of the art 2025-2026",
+      "notes": "Should surface Anthropic Computer Use, OpenAI Operator, browser-use.",
+      "source": "Recent product launches from Anthropic and OpenAI."
+    },
+    {
+      "id": "real-evaluation-deep-research",
+      "kind": "real",
+      "query": "How are deep research agents evaluated quantitatively?",
+      "notes": "Direct meta-relevance to this project — what eval frameworks exist?",
+      "source": "OpenAI Deep Research / Perplexity / research agent papers."
+    },
+    {
+      "id": "real-llm-os",
+      "kind": "real",
+      "query": "What is the LLM as operating system paradigm in agent design?",
+      "notes": "Karpathy's framing — should surface his lectures and recent work.",
+      "source": "Karpathy lectures and LessWrong/Twitter discussion."
+    },
+    {
+      "id": "real-cost-of-deep-research",
+      "kind": "real",
+      "query": "Token cost economics of deep research agents OpenAI Perplexity Anthropic",
+      "notes": "Per-query economics, scaling, monetization.",
+      "source": "Industry blogs and engineering posts."
+    },
+    {
+      "id": "real-test-time-compute",
+      "kind": "real",
+      "query": "Test-time compute scaling laws for reasoning models o1 R1 Sonnet 4.5",
+      "notes": "Should surface o1, R1 scaling behavior, and recent thinking budget research.",
+      "source": "OpenAI o1 / DeepSeek R1 papers."
+    },
+    {
+      "id": "real-mcp-implementations",
+      "kind": "real",
+      "query": "Best Model Context Protocol server implementations and patterns",
+      "notes": "Should surface official Anthropic MCP servers + community ones.",
+      "source": "Anthropic MCP launch + community patterns."
+    },
+    {
+      "id": "real-evaluating-coding",
+      "kind": "real",
+      "query": "Beyond HumanEval: what are modern coding agent benchmarks SWE-bench LiveCodeBench",
+      "notes": "Should surface SWE-bench, SWE-bench Verified, LiveCodeBench, and the move beyond HumanEval.",
+      "source": "Princeton/Berkeley NLP labs and benchmark releases."
+    },
+    {
+      "id": "real-observability-agents",
+      "kind": "real",
+      "query": "Observability and debugging tools for production AI agents Langfuse LangSmith",
+      "notes": "Should surface Langfuse, LangSmith, Helicone, Honeycomb-for-LLMs.",
+      "source": "Production engineering discussion."
+    },
+    {
+      "id": "real-hallucination-detection",
+      "kind": "real",
+      "query": "Approaches to detect and reduce LLM hallucinations in 2025",
+      "notes": "Should surface SelfCheckGPT, semantic entropy, retrieval-grounding.",
+      "source": "Research and production patterns."
+    },
+    {
+      "id": "real-agent-frameworks",
+      "kind": "real",
+      "query": "Comparison of agent orchestration frameworks LangGraph CrewAI AutoGen",
+      "notes": "Engineering tradeoffs of major agent frameworks.",
+      "source": "Frequent comparison post topic."
+    },
+    {
+      "id": "real-routing-llms",
+      "kind": "real",
+      "query": "LLM router and cascade approaches for cost optimization",
+      "notes": "Should surface Hybrid LLM, RouteLLM, FrugalGPT.",
+      "source": "Cost-optimization research from Stanford / Berkeley."
+    },
+    {
+      "id": "real-chunk-strategies",
+      "kind": "real",
+      "query": "Document chunking strategies for RAG semantic vs fixed-size",
+      "notes": "Practical chunking tradeoffs (semantic, recursive, late-chunking).",
+      "source": "LlamaIndex / LangChain blog content."
+    },
+    {
+      "id": "real-prompt-injection-defense",
+      "kind": "real",
+      "query": "Defenses against prompt injection in production LLM applications",
+      "notes": "Should surface Spotlighting, Constitutional AI, classifier-based defenses.",
+      "source": "Simon Willison blog and security research."
+    },
+    {
+      "id": "real-rlhf-alternatives",
+      "kind": "real",
+      "query": "Beyond RLHF: alternative alignment methods DPO GRPO KTO",
+      "notes": "Should surface DPO, GRPO, KTO, ORPO and their tradeoffs.",
+      "source": "Recent alignment research."
+    },
+    {
+      "id": "real-frontier-evals",
+      "kind": "real",
+      "query": "Frontier LLM evaluation benchmarks GPQA MMLU Humanity's Last Exam saturation",
+      "notes": "Should surface GPQA, MMLU saturation, ARC-AGI, HumanityLastExam.",
+      "source": "Frontier model release posts."
     }
   ]
 }
