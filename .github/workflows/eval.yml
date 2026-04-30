@@ -75,20 +75,33 @@ jobs:
           retention-days: 30
 
       - name: Comment results on PR
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
             const reportsDir = 'eval/reports';
-            const files = fs.readdirSync(reportsDir).filter(f => f.endsWith('.md')).sort();
-            if (!files.length) {
-              core.setFailed('No eval report markdown found.');
-              return;
+            let files = [];
+            try {
+              files = fs.readdirSync(reportsDir).filter(f => f.endsWith('.md')).sort();
+            } catch (e) {
+              core.warning(`No eval/reports/ directory: ${e.message}`);
             }
-            const latest = path.join(reportsDir, files[files.length - 1]);
-            const body = '### Eval Results\n\n' + fs.readFileSync(latest, 'utf8');
+            const regressionFailed = '${{ steps.regression.outcome }}' === 'failure';
+            const header = regressionFailed
+              ? '### ❌ Eval Results — Regression detected'
+              : '### ✅ Eval Results';
+            let body;
+            if (!files.length) {
+              body = `${header}\n\n_No eval report markdown found — eval step likely failed before producing a report._`;
+            } else {
+              const latest = path.join(reportsDir, files[files.length - 1]);
+              body = `${header}\n\n${fs.readFileSync(latest, 'utf8')}`;
+              if (regressionFailed) {
+                body += '\n\n> Regression check failed: a metric dropped by more than the configured tolerance vs `eval/baseline.json`. Investigate, or update the baseline if the drop is intentional.';
+              }
+            }
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
