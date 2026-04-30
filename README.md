@@ -5,10 +5,14 @@
 
 > Production-grade AI agent that researches a technical topic on demand and returns a grounded markdown brief with inline citations.
 
-**Try it live** (deployed on Modal):
+**Try it live** — interactive UI deployed on Modal:
+
+### 🌐 [https://romanserbin96--ai-research-agent-research.modal.run](https://romanserbin96--ai-research-agent-research.modal.run)
+
+Or hit the JSON API directly:
 
 ```bash
-curl -X POST https://romanserbin96--ai-research-agent-research.modal.run \
+curl -X POST https://romanserbin96--ai-research-agent-research.modal.run/api/research \
   -H "Content-Type: application/json" \
   -d '{"query": "agent memory approaches in 2025-2026"}'
 ```
@@ -226,7 +230,6 @@ A typical run on a single query costs **<$0.50** with Sonnet 4.6 + Haiku 4.5 (10
 
 Still deferred:
 
-- Web UI (FastAPI / Gradio / Streamlit)
 - 50-task eval ground truth labels for the **real** subset (currently only synthetic tasks have `must_have_urls`)
 - Stored baselines for pairwise comparison (pairwise infrastructure ready, just no committed baseline brief set yet)
 
@@ -241,4 +244,4 @@ Still deferred:
 7. ~~Modal deploy~~ ✅
 8. ~~pass^k reliability metric~~ ✅
 9. ~~Pairwise usefulness comparison + position-bias mitigation~~ ✅
-10. Web UI (FastAPI / Gradio / Streamlit) — open
+10. ~~Web UI (Tailwind + Alpine.js, served by Modal ASGI)~~ ✅

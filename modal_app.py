@@ -4,8 +4,10 @@ Deploy with::
 
     modal deploy modal_app.py
 
-This creates a public HTTPS endpoint that runs the same pipeline as the local CLI.
-The endpoint returns the rendered markdown brief plus run metadata as JSON.
+This creates a public HTTPS endpoint that serves both:
+- ``GET /`` — interactive web UI (single-page app, Tailwind + Alpine.js)
+- ``POST /api/research`` — JSON API: `{"query": "..."}` returns the rendered brief
+- ``POST /`` — same API, kept for the curl example in the README
 
 Secrets to configure in the Modal dashboard (https://modal.com/secrets):
 - ``anthropic-api-key`` with key ``ANTHROPIC_API_KEY`` — required
@@ -42,6 +44,7 @@ image = (
     )
     .add_local_python_source("research_agent")
     .add_local_dir("prompts", "/root/prompts")
+    .add_local_dir("web", "/root/web")
 )
 
 # Required: Anthropic API key. Configure in https://modal.com/secrets:
@@ -59,16 +62,8 @@ SECRETS: list[modal.Secret] = [
 ]
 
 
-@app.function(
-    image=image,
-    secrets=SECRETS,
-    timeout=600,  # 10 minutes — generous for slow rate-limit retries
-    cpu=1.0,
-    memory=2048,
-)
-@modal.fastapi_endpoint(method="POST", docs=True)
-def research(payload: dict) -> dict:
-    """Run the research pipeline. POST JSON body ``{"query": "..."}``."""
+def _run_pipeline(payload: dict) -> dict:
+    """Shared logic for both POST routes."""
     import asyncio
     import time
 
@@ -81,7 +76,7 @@ def research(payload: dict) -> dict:
     if not query:
         return {"error": "missing 'query' field in JSON body"}
 
-    load_settings()  # validate ANTHROPIC_API_KEY present
+    load_settings()
     state = {
         "query": query,
         "errors": [],
@@ -115,6 +110,45 @@ def research(payload: dict) -> dict:
         "brief_markdown": brief_to_markdown(brief),
         "brief": brief.model_dump(mode="json"),
     }
+
+
+@app.function(
+    image=image,
+    secrets=SECRETS,
+    timeout=600,  # 10 minutes — generous for slow rate-limit retries
+    cpu=1.0,
+    memory=2048,
+)
+@modal.asgi_app()
+def research():
+    """Web UI + JSON API in one ASGI app."""
+    from pathlib import Path
+
+    from fastapi import FastAPI
+    from fastapi.responses import HTMLResponse, JSONResponse
+
+    fa = FastAPI(title="Technical Research Agent", docs_url="/docs")
+
+    # Cached HTML (read once at cold start).
+    html_path = Path("/root/web/index.html")
+    index_html = html_path.read_text(encoding="utf-8") if html_path.is_file() else (
+        "<h1>UI not bundled</h1>"
+    )
+
+    @fa.get("/", response_class=HTMLResponse)
+    def index() -> HTMLResponse:
+        return HTMLResponse(index_html)
+
+    @fa.post("/api/research")
+    def api_research(payload: dict) -> JSONResponse:
+        return JSONResponse(_run_pipeline(payload))
+
+    # Backward-compat: the README curl example still hits POST /.
+    @fa.post("/")
+    def root_post(payload: dict) -> JSONResponse:
+        return JSONResponse(_run_pipeline(payload))
+
+    return fa
 
 
 @app.function(image=image, secrets=SECRETS, timeout=900)
