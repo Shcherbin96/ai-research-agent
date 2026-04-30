@@ -38,6 +38,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN || github.token }}
         run: uv run research-agent eval --output-dir eval/reports
 
+      - name: Regression check
+        id: regression
+        if: always()
+        run: |
+          LATEST=$(ls -1t eval/reports/*-report.json 2>/dev/null | head -n 1)
+          if [ -z "$LATEST" ]; then
+            echo "::error::No latest eval report found."
+            exit 1
+          fi
+          uv run python -m research_agent.eval.regression eval/baseline.json "$LATEST"
+
       - name: Upload report artifacts
         if: always()
         uses: actions/upload-artifact@v4

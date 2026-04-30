@@ -8,10 +8,12 @@ from research_agent.models import Brief, Citation
 def test_dataset_loads_and_validates():
     ds = load_dataset()
     assert ds.version
-    assert len(ds.tasks) >= 5
+    assert len(ds.tasks) >= 10
     kinds = {t.kind for t in ds.tasks}
     assert "synthetic" in kinds
     assert "real" in kinds
+    ids = {t.id for t in ds.tasks}
+    assert len(ids) == len(ds.tasks), "task IDs must be unique"
 
 
 def test_claims_from_findings_strips_markers():

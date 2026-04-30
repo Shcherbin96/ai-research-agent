@@ -1,11 +1,11 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "tasks": [
     {
       "id": "syn-mem0",
       "kind": "synthetic",
       "query": "Mem0 architecture for LLM agent memory",
-      "notes": "Mem0 is a well-known agent memory framework with arXiv paper + GitHub repo. A competent run must surface at least one of them.",
+      "notes": "Mem0 is a well-known agent memory framework with arXiv paper + GitHub repo.",
       "must_have_urls": [
         "https://arxiv.org/abs/2504.19413",
         "https://github.com/mem0ai/mem0"
@@ -34,20 +34,68 @@
       "source": ""
     },
     {
+      "id": "syn-llama-3",
+      "kind": "synthetic",
+      "query": "Llama 3 herd of models architecture and training data",
+      "notes": "Meta's Llama 3 has the canonical 'herd of models' arXiv paper.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2407.21783"
+      ],
+      "source": ""
+    },
+    {
+      "id": "syn-vllm",
+      "kind": "synthetic",
+      "query": "vLLM PagedAttention serving framework architecture",
+      "notes": "vLLM with PagedAttention has both an SOSP paper (arXiv) and a GitHub repo.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2309.06180",
+        "https://github.com/vllm-project/vllm"
+      ],
+      "source": ""
+    },
+    {
+      "id": "syn-dspy",
+      "kind": "synthetic",
+      "query": "DSPy framework for compiling LLM programs",
+      "notes": "DSPy is Stanford's framework for declarative LLM pipelines with paper + active GitHub.",
+      "must_have_urls": [
+        "https://arxiv.org/abs/2310.03714",
+        "https://github.com/stanfordnlp/dspy"
+      ],
+      "source": ""
+    },
+    {
       "id": "real-eval-llm-judges",
       "kind": "real",
       "query": "How reliable is LLM-as-a-judge for evaluating agent outputs in 2025-2026?",
-      "notes": "Real research question — evaluate whether the agent surfaces specific concerns (position bias, verbosity bias, calibration).",
+      "notes": "Should surface position bias, verbosity bias, calibration concerns from recent research.",
       "must_have_urls": [],
-      "source": "Common discussion in r/MachineLearning and on Twitter; included to cover meta-evaluation."
+      "source": "Common discussion in r/MachineLearning and on Twitter."
     },
     {
       "id": "real-mcp-vs-tool-use",
       "kind": "real",
       "query": "Differences between Model Context Protocol (MCP) and traditional function-calling tool use",
-      "notes": "Real question — should surface the MCP spec, comparison with OpenAI function calling, and tradeoffs.",
+      "notes": "Should surface the MCP spec, comparison with OpenAI function calling, and tradeoffs.",
       "must_have_urls": [],
       "source": "Common HN/Twitter question after MCP launch."
+    },
+    {
+      "id": "real-rag-vs-long-context",
+      "kind": "real",
+      "query": "RAG vs long-context windows: when does each approach win in 2025-2026?",
+      "notes": "Persistent practical debate. Should surface specific tradeoffs (cost, latency, recall, freshness).",
+      "must_have_urls": [],
+      "source": "Common engineering question on HN and r/LocalLLaMA."
+    },
+    {
+      "id": "real-agent-pass-k",
+      "kind": "real",
+      "query": "Reliability metrics for AI agents: what is pass^k and how is it measured?",
+      "notes": "Specific to eval-driven AI engineering. Should surface OpenAI/Anthropic blogposts and recent papers.",
+      "must_have_urls": [],
+      "source": "Anthropic and OpenAI engineering blogs from 2025."
     }
   ]
 }
