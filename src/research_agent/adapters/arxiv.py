@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def _search_sync(query: str, limit: int) -> list[Candidate]:
-    client = arxiv.Client(page_size=limit, delay_seconds=3.0, num_retries=3)
+    # arXiv rate-limits aggressively, especially from cloud IPs (Modal). Use a
+    # generous delay + extra retries so a 429/503 doesn't kill the adapter.
+    client = arxiv.Client(page_size=limit, delay_seconds=5.0, num_retries=5)
     search = arxiv.Search(
         query=query,
         max_results=limit,
@@ -49,12 +51,27 @@ def _search_sync(query: str, limit: int) -> list[Candidate]:
     return out
 
 
+# arXiv allows ~1 request per 3-5s per source IP. Across many parallel
+# subqueries from search_node we'd hit 429 immediately, so serialize at the
+# adapter boundary.
+_ARXIV_SEMAPHORE: asyncio.Semaphore | None = None
+
+
+def _get_arxiv_semaphore() -> asyncio.Semaphore:
+    global _ARXIV_SEMAPHORE
+    if _ARXIV_SEMAPHORE is None:
+        _ARXIV_SEMAPHORE = asyncio.Semaphore(1)
+    return _ARXIV_SEMAPHORE
+
+
 async def search(query: str, limit: int = 10) -> list[Candidate]:
-    try:
-        return await asyncio.to_thread(_search_sync, query, limit)
-    except Exception as exc:
-        logger.warning("arxiv search failed for %r: %s", query, exc)
-        return []
+    sem = _get_arxiv_semaphore()
+    async with sem:
+        try:
+            return await asyncio.to_thread(_search_sync, query, limit)
+        except Exception as exc:
+            logger.warning("arxiv search failed for %r: %s", query, exc)
+            return []
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:

@@ -11,18 +11,25 @@ from functools import lru_cache
 from pathlib import Path
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
-_DEV_PROMPTS_DIR = _PACKAGE_DIR.parent.parent / "prompts"
-_BUNDLED_PROMPTS_DIR = _PACKAGE_DIR / "prompts"
+
+# Resolution order:
+#   1. ``<repo>/prompts/`` — local editable install (src/research_agent → repo root)
+#   2. ``<package_dir>/../prompts`` — Modal mount target (/root/prompts when the
+#      package lives at /root/research_agent)
+#   3. ``<package_dir>/prompts/`` — bundled wheel (see pyproject force-include)
+_PROMPTS_CANDIDATES = (
+    _PACKAGE_DIR.parent.parent / "prompts",
+    _PACKAGE_DIR.parent / "prompts",
+    _PACKAGE_DIR / "prompts",
+)
 
 
 def _resolve_dir() -> Path:
-    if _DEV_PROMPTS_DIR.is_dir():
-        return _DEV_PROMPTS_DIR
-    if _BUNDLED_PROMPTS_DIR.is_dir():
-        return _BUNDLED_PROMPTS_DIR
-    raise FileNotFoundError(
-        f"prompts/ not found at {_DEV_PROMPTS_DIR} or {_BUNDLED_PROMPTS_DIR}"
-    )
+    for candidate in _PROMPTS_CANDIDATES:
+        if candidate.is_dir():
+            return candidate
+    paths = ", ".join(str(p) for p in _PROMPTS_CANDIDATES)
+    raise FileNotFoundError(f"prompts/ not found at any of: {paths}")
 
 
 @lru_cache(maxsize=None)
