@@ -95,7 +95,12 @@ def recall(query: str, limit: int = 3) -> list[dict[str, Any]]:
     if client is None:
         return []
     try:
-        results = client.search(query, user_id=_user_id())
+        # Mem0 v2 API uses filters={...} instead of top-level user_id.
+        results = client.search(
+            query,
+            version="v2",
+            filters={"user_id": _user_id()},
+        )
     except Exception as exc:
         logger.warning("mem0 recall failed: %s", exc)
         return []
