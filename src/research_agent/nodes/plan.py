@@ -34,7 +34,7 @@ async def plan_node(state: ResearchState) -> dict:
     system = load_prompt("plan")
     user = f"User query: {query}\n\nProduce 3–6 subqueries.{_format_recalled(memories)}"
 
-    raw = call_sonnet(system=system, user=user, max_tokens=1024, temperature=0.3)
+    raw = call_sonnet(system=system, user=user, max_tokens=1024, temperature=0.3, node="plan")
     try:
         payload = extract_json_tag(raw)
         subqueries = [s.strip() for s in payload.get("subqueries", []) if isinstance(s, str)]

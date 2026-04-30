@@ -40,6 +40,8 @@ async def synthesize_node(state: ResearchState) -> dict:
     facts = state.get("facts") or []
     selected = state.get("selected") or []
     by_url = {str(c.url): c for c in selected}
+    attempts = state.get("synthesize_attempts", 0)
+    feedback = state.get("verify_feedback", "")
 
     if not facts:
         logger.warning("synthesize_node: no facts to work with")
@@ -50,16 +52,23 @@ async def synthesize_node(state: ResearchState) -> dict:
                 "Try rephrasing the topic or running with --verbose to inspect errors."
             ),
         )
-        return {"brief": empty}
+        return {"brief": empty, "synthesize_attempts": attempts + 1}
 
     system = load_prompt("synthesize")
-    user = (
-        f"Query: {query}\n\n"
-        f"Facts ({len(facts)}):\n\n{_format_facts(facts, by_url)}\n\n"
-        f"Produce the Brief now."
-    )
+    user_parts = [
+        f"Query: {query}",
+        "",
+        f"Facts ({len(facts)}):",
+        "",
+        _format_facts(facts, by_url),
+    ]
+    if feedback and attempts > 0:
+        user_parts.extend(["", "## Verifier feedback from previous attempt", feedback])
+        logger.info("synthesize_node: retry attempt %d with verifier feedback", attempts + 1)
+    user_parts.extend(["", "Produce the Brief now."])
+    user = "\n".join(user_parts)
 
-    raw = call_sonnet(system=system, user=user, max_tokens=4096, temperature=0.3)
+    raw = call_sonnet(system=system, user=user, max_tokens=4096, temperature=0.3, node="synthesize")
 
     try:
         payload = extract_json_tag(raw)
@@ -117,4 +126,4 @@ async def synthesize_node(state: ResearchState) -> dict:
         len(brief.comparison_matrix),
     )
     store_brief(query, brief)
-    return {"brief": brief}
+    return {"brief": brief, "synthesize_attempts": attempts + 1}

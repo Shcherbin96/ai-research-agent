@@ -26,6 +26,9 @@ import modal
 
 app = modal.App("ai-research-agent")
 
+# Persistent KV store for shareable briefs. Survives container restarts.
+briefs_store = modal.Dict.from_name("ai-research-agent-briefs", create_if_missing=True)
+
 # Build the runtime image directly from the repo's pyproject + lock.
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -69,6 +72,7 @@ def _run_pipeline(payload: dict) -> dict:
 
     from research_agent.config import load_settings
     from research_agent.graph import build_graph
+    from research_agent.llm import get_run_usage, reset_run_usage
     from research_agent.observability import flush as langfuse_flush
     from research_agent.render import brief_to_markdown
 
@@ -87,19 +91,53 @@ def _run_pipeline(payload: dict) -> dict:
     }
 
     graph = build_graph()
+    reset_run_usage()
     started = time.time()
     try:
         final = asyncio.run(graph.ainvoke(state))
     finally:
         langfuse_flush()
     elapsed = time.time() - started
+    usage = get_run_usage()
 
     brief = final.get("brief")
     if brief is None:
-        return {"error": "pipeline produced no brief", "errors": final.get("errors") or []}
+        return {
+            "error": "pipeline produced no brief",
+            "errors": final.get("errors") or [],
+            "cost_usd": round(usage["total_cost_usd"], 4),
+        }
+
+    # Cost breakdown by node
+    by_node: dict[str, dict[str, float | int]] = {}
+    cache_read_tokens = 0
+    cache_creation_tokens = 0
+    for c in usage["calls"]:
+        n = c.get("node") or "?"
+        b = by_node.setdefault(n, {"cost_usd": 0.0, "calls": 0})
+        b["cost_usd"] += c["cost_usd"]["total"]
+        b["calls"] += 1
+        cache_read_tokens += c["usage"].get("cache_read", 0)
+        cache_creation_tokens += c["usage"].get("cache_creation", 0)
+
+    # Persist for shareable link.
+    import secrets as _secrets
+    import time as _time
+    brief_id = _secrets.token_urlsafe(8)
+    try:
+        briefs_store[brief_id] = {
+            "brief": brief.model_dump(mode="json"),
+            "brief_markdown": brief_to_markdown(brief),
+            "query": query,
+            "elapsed_sec": round(elapsed, 1),
+            "saved_at": _time.time(),
+        }
+    except Exception:
+        brief_id = None
 
     return {
         "query": query,
+        "brief_id": brief_id,
         "elapsed_sec": round(elapsed, 1),
         "n_candidates": len(final.get("candidates") or []),
         "n_selected": len(final.get("selected") or []),
@@ -107,6 +145,15 @@ def _run_pipeline(payload: dict) -> dict:
         "n_findings": len(brief.key_findings),
         "n_citations": len(brief.citations),
         "errors": final.get("errors") or [],
+        "cost_usd": round(usage["total_cost_usd"], 4),
+        "cost_by_node": {
+            n: {"cost_usd": round(d["cost_usd"], 4), "calls": d["calls"]}
+            for n, d in by_node.items()
+        },
+        "cache_tokens": {
+            "read": cache_read_tokens,
+            "creation": cache_creation_tokens,
+        },
         "brief_markdown": brief_to_markdown(brief),
         "brief": brief.model_dump(mode="json"),
     }
@@ -121,11 +168,12 @@ def _run_pipeline(payload: dict) -> dict:
 )
 @modal.asgi_app()
 def research():
-    """Web UI + JSON API in one ASGI app."""
+    """Web UI + JSON API + SSE streaming endpoint in one ASGI app."""
+    import json as _json
     from pathlib import Path
 
     from fastapi import FastAPI
-    from fastapi.responses import HTMLResponse, JSONResponse
+    from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
     fa = FastAPI(title="Technical Research Agent", docs_url="/docs")
 
@@ -139,9 +187,96 @@ def research():
     def index() -> HTMLResponse:
         return HTMLResponse(index_html)
 
+    @fa.get("/brief/{brief_id}", response_class=HTMLResponse)
+    def shared_brief(brief_id: str) -> HTMLResponse:
+        """Render a previously-saved brief by id, in the same UI shell."""
+        try:
+            saved = briefs_store[brief_id]
+        except (KeyError, Exception):
+            return HTMLResponse(
+                "<h1>Brief not found</h1><p>This share link has expired or never existed.</p>",
+                status_code=404,
+            )
+        # Inject the saved brief as a JS global so the page can render it on load.
+        injected = (
+            "<script>window.__SHARED_BRIEF__ = "
+            + _json.dumps(saved)
+            + ";</script>"
+        )
+        # Insert just before </head> so the script runs before Alpine init.
+        if "</head>" in index_html:
+            page = index_html.replace("</head>", injected + "</head>")
+        else:
+            page = injected + index_html
+        return HTMLResponse(page)
+
+    @fa.get("/api/brief/{brief_id}")
+    def api_get_brief(brief_id: str) -> JSONResponse:
+        try:
+            saved = briefs_store[brief_id]
+        except (KeyError, Exception):
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return JSONResponse(saved)
+
     @fa.post("/api/research")
     def api_research(payload: dict) -> JSONResponse:
         return JSONResponse(_run_pipeline(payload))
+
+    @fa.post("/api/research/stream")
+    async def api_research_stream(payload: dict) -> StreamingResponse:
+        """SSE endpoint. Emits ``stage`` / ``chunk`` / ``verify`` / ``result`` events."""
+        from research_agent.config import load_settings
+        from research_agent.streaming import stream_pipeline
+
+        query = (payload.get("query") or "").strip()
+        if not query:
+            async def _err_stream():
+                yield f"event: error\ndata: {_json.dumps({'message': 'missing query'})}\n\n"
+            return StreamingResponse(_err_stream(), media_type="text/event-stream")
+
+        load_settings()
+        state = {
+            "query": query,
+            "errors": [],
+            "use_web": payload.get("use_web", True),
+            "use_scholar": payload.get("use_scholar", False),
+            "limit_per_source": payload.get("limit_per_source", 10),
+            "top_n": payload.get("top_n", 10),
+        }
+
+        async def event_stream():
+            import secrets as _secrets
+            import time as _time
+            try:
+                async for ev in stream_pipeline(state):
+                    # On the final result event, persist the brief and inject brief_id.
+                    if ev.get("type") == "result" and ev.get("brief"):
+                        brief_id = _secrets.token_urlsafe(8)
+                        try:
+                            briefs_store[brief_id] = {
+                                "brief": ev["brief"],
+                                "brief_markdown": ev.get("brief_markdown", ""),
+                                "query": ev.get("query", ""),
+                                "elapsed_sec": ev.get("elapsed_sec"),
+                                "saved_at": _time.time(),
+                            }
+                            ev["brief_id"] = brief_id
+                        except Exception:
+                            pass
+                    et = ev.get("type", "message")
+                    yield f"event: {et}\ndata: {_json.dumps(ev)}\n\n"
+            except Exception as exc:
+                yield (
+                    "event: error\ndata: "
+                    + _json.dumps({"message": repr(exc)})
+                    + "\n\n"
+                )
+
+        return StreamingResponse(
+            event_stream(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     # Backward-compat: the README curl example still hits POST /.
     @fa.post("/")

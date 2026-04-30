@@ -143,16 +143,27 @@
       </div>
     </div>
 
-    <!-- Loading state -->
+    <!-- Loading state with stage timeline -->
     <div x-show="loading" x-transition class="bg-white rounded-xl border border-stone-200 shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between mb-3">
         <div class="text-sm font-semibold text-stone-700" x-text="stageLabel"></div>
         <div class="text-xs text-stone-500 font-mono" x-text="elapsedLabel"></div>
       </div>
-      <div class="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
-        <div class="bg-orange-500 h-1.5 rounded-full transition-all" :style="`width: ${Math.min(100, (elapsed / 120) * 100)}%`"></div>
+      <!-- Stage timeline -->
+      <div class="grid grid-cols-6 gap-1 mb-3">
+        <template x-for="s in stages" :key="s.key">
+          <div class="flex flex-col items-center gap-1">
+            <div class="w-full h-1.5 rounded-full"
+                 :class="stageState[s.key] === 'done' ? 'bg-emerald-500' : (stageState[s.key] === 'running' ? 'bg-orange-500 animate-pulse' : 'bg-stone-200')"></div>
+            <span class="text-[10px] text-stone-500 hidden sm:block" x-text="s.label"></span>
+          </div>
+        </template>
       </div>
-      <div class="mt-3 text-xs text-stone-500 italic" x-text="stageHint"></div>
+      <div class="text-xs text-stone-500 italic" x-text="stageHint"></div>
+      <!-- Live streaming text from synthesize -->
+      <div x-show="streamingText" x-transition
+           class="mt-4 p-4 bg-stone-50 rounded-lg border border-stone-200 max-h-64 overflow-y-auto text-xs font-mono text-stone-700 whitespace-pre-wrap"
+           x-text="streamingText"></div>
     </div>
 
     <!-- Error -->
@@ -163,8 +174,9 @@
 
     <!-- Result -->
     <div x-show="result" x-transition class="bg-white rounded-xl border border-stone-200 shadow-sm p-8 mb-6">
-      <!-- Run stats -->
-      <div class="flex flex-wrap gap-3 text-xs mb-6 pb-4 border-b border-stone-100">
+      <!-- Share + run stats -->
+      <div class="flex items-center justify-between mb-4 pb-4 border-b border-stone-100">
+        <div class="flex flex-wrap gap-3 text-xs flex-1">
         <span class="px-2 py-1 rounded bg-stone-100 text-stone-700">
           <span class="font-mono" x-text="result?.elapsed_sec"></span><span>s</span>
         </span>
@@ -183,10 +195,28 @@
         <span class="px-2 py-1 rounded bg-orange-100 text-orange-800 font-medium">
           <span class="font-mono" x-text="result?.n_citations"></span> citations
         </span>
+        <template x-if="result?.cost_usd !== undefined">
+          <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800 font-medium"
+                :title="costBreakdown">
+            <span class="font-mono">$<span x-text="result.cost_usd?.toFixed(3)"></span></span>
+          </span>
+        </template>
+        <template x-if="result?.cache_tokens?.read > 0">
+          <span class="px-2 py-1 rounded bg-purple-100 text-purple-800"
+                :title="`${result.cache_tokens.read} tokens read from prompt cache (saved ~${cacheSavings}¢)`">
+            cache hit: <span class="font-mono" x-text="result.cache_tokens.read"></span>t
+          </span>
+        </template>
         <template x-if="result?.errors?.length">
           <span class="px-2 py-1 rounded bg-amber-100 text-amber-800">
             <span class="font-mono" x-text="result.errors.length"></span> warnings
           </span>
+        </template>
+        </div>
+        <template x-if="result?.brief_id">
+          <button @click="copyShareLink()" class="ml-3 text-xs px-3 py-1.5 rounded-md border border-stone-300 hover:bg-stone-100 text-stone-700 transition-colors flex-shrink-0"
+                  x-text="shareCopied ? '✓ Copied' : 'Share link'">
+          </button>
         </template>
       </div>
       <article class="brief-md" x-html="renderedBrief"></article>
@@ -213,6 +243,10 @@
         error: null,
         elapsed: 0,
         timer: null,
+        currentStage: null,
+        stageState: {},
+        streamingText: '',
+        shareCopied: false,
         examples: [
           'agent memory approaches in 2025-2026',
           'DSPy framework for compiling LLM programs',
@@ -220,30 +254,87 @@
           'FlashAttention algorithm details',
           'LangGraph state machine basics',
         ],
+        stages: [
+          { key: 'plan',       label: 'plan' },
+          { key: 'search',     label: 'search' },
+          { key: 'rank',       label: 'rank' },
+          { key: 'read',       label: 'read' },
+          { key: 'synthesize', label: 'synthesize' },
+          { key: 'verify',     label: 'verify' },
+        ],
+        stageHints: {
+          plan: 'Decomposing your query into 3-6 focused search subqueries.',
+          search: 'Fanning out across three sources in parallel — finding 30-50 candidate papers, repos, and articles.',
+          rank: 'Haiku 4.5 is picking the most relevant 6-10 candidates with source diversity.',
+          read: 'Sonnet 4.6 is reading each source and extracting verbatim quotes for grounding.',
+          synthesize: 'Assembling executive summary, key findings, and comparison matrix — every claim tied to a citation.',
+          verify: 'Self-checking each claim against its cited fact. Low support triggers a retry.',
+        },
 
         get elapsedLabel() {
           return `${this.elapsed}s`;
         },
 
         get stageLabel() {
-          if (this.elapsed < 12) return 'Planning research subqueries...';
-          if (this.elapsed < 35) return 'Searching arXiv, GitHub, web...';
-          if (this.elapsed < 50) return 'Ranking candidates...';
-          if (this.elapsed < 100) return 'Reading sources...';
-          return 'Synthesizing brief with citations...';
+          if (!this.currentStage) return 'Starting...';
+          const s = this.stages.find(x => x.key === this.currentStage);
+          return s ? `${s.label}...` : 'Working...';
         },
 
         get stageHint() {
-          if (this.elapsed < 12) return 'Decomposing your query into 3-6 focused search subqueries.';
-          if (this.elapsed < 35) return 'Fanning out across three sources in parallel — finding 30-50 candidate papers, repos, and articles.';
-          if (this.elapsed < 50) return 'Haiku 4.5 is picking the most relevant 6-10 candidates with source diversity.';
-          if (this.elapsed < 100) return 'Sonnet 4.6 is reading each source and extracting verbatim quotes for grounding.';
-          return 'Assembling executive summary, key findings, and comparison matrix — every claim tied to a citation.';
+          return this.stageHints[this.currentStage] || '';
+        },
+
+        init() {
+          // If the page was rendered with a shared brief, hydrate the result UI
+          // so the user lands directly on the brief without running anything.
+          if (window.__SHARED_BRIEF__) {
+            const s = window.__SHARED_BRIEF__;
+            this.result = {
+              brief_markdown: s.brief_markdown,
+              brief: s.brief,
+              query: s.query,
+              elapsed_sec: s.elapsed_sec,
+              n_findings: (s.brief?.key_findings || []).length,
+              n_citations: (s.brief?.citations || []).length,
+            };
+            this.query = s.query || '';
+          }
         },
 
         get renderedBrief() {
           if (!this.result?.brief_markdown) return '';
           return marked.parse(this.result.brief_markdown);
+        },
+
+        async copyShareLink() {
+          if (!this.result?.brief_id) return;
+          const url = `${window.location.origin}/brief/${this.result.brief_id}`;
+          try {
+            await navigator.clipboard.writeText(url);
+            this.shareCopied = true;
+            setTimeout(() => this.shareCopied = false, 2000);
+          } catch (e) {
+            // Fallback: prompt
+            window.prompt('Copy share link:', url);
+          }
+        },
+
+        get costBreakdown() {
+          const b = this.result?.cost_by_node;
+          if (!b) return '';
+          return Object.entries(b)
+            .sort((a, b) => b[1].cost_usd - a[1].cost_usd)
+            .map(([n, d]) => `${n}: $${d.cost_usd.toFixed(3)} (${d.calls} calls)`)
+            .join('\n');
+        },
+
+        get cacheSavings() {
+          // Cache reads cost 0.10x input rate. Savings vs no-cache = 90% of read input cost.
+          // Sonnet input = $3/M, so 90% saving = $2.70/M = $0.0027/k = 0.27¢/k
+          const tokens = this.result?.cache_tokens?.read || 0;
+          const cents = (tokens / 1000) * 0.27;
+          return cents.toFixed(2);
         },
 
         async run() {
@@ -252,29 +343,80 @@
           this.result = null;
           this.error = null;
           this.elapsed = 0;
+          this.currentStage = null;
+          this.stageState = {};
+          this.streamingText = '';
           this.timer = setInterval(() => this.elapsed++, 1000);
 
           try {
-            const r = await fetch('/api/research', {
+            const r = await fetch('/api/research/stream', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ query: this.query.trim() }),
             });
-            if (!r.ok) {
+            if (!r.ok || !r.body) {
               const txt = await r.text();
               throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
             }
-            const data = await r.json();
-            if (data.error) {
-              this.error = data.error;
-            } else {
-              this.result = data;
+
+            // Parse SSE manually (EventSource is GET-only).
+            const reader = r.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              // Split on double-newline (SSE event separator)
+              let idx;
+              while ((idx = buffer.indexOf('\n\n')) !== -1) {
+                const block = buffer.slice(0, idx);
+                buffer = buffer.slice(idx + 2);
+                this._handleSSE(block);
+              }
             }
           } catch (e) {
             this.error = e.message || String(e);
           } finally {
             this.loading = false;
             clearInterval(this.timer);
+          }
+        },
+
+        _handleSSE(block) {
+          // Each block is "event: <name>\ndata: <json>"
+          const lines = block.split('\n');
+          let event = 'message';
+          let data = '';
+          for (const line of lines) {
+            if (line.startsWith('event: ')) event = line.slice(7).trim();
+            else if (line.startsWith('data: ')) data += line.slice(6);
+          }
+          if (!data) return;
+          let payload;
+          try { payload = JSON.parse(data); } catch (e) { return; }
+
+          if (event === 'stage') {
+            this.currentStage = payload.node;
+            this.stageState[payload.node] = payload.status;
+            // For synthesize "running" event after a retry, clear streamingText
+            if (payload.node === 'synthesize' && payload.status === 'running' && payload.attempt > 1) {
+              this.streamingText = '';
+            }
+          } else if (event === 'chunk') {
+            this.streamingText += payload.text || '';
+          } else if (event === 'verify') {
+            // Show in stageHint via verify state
+            this.stageState.verify = payload.retry ? 'running' : 'done';
+          } else if (event === 'result') {
+            this.result = payload;
+            // Mark all stages done at end
+            for (const s of this.stages) this.stageState[s.key] = 'done';
+            this.currentStage = null;
+            if (payload.error) this.error = payload.error;
+          } else if (event === 'error') {
+            this.error = payload.message || 'Unknown server error';
           }
         },
       };

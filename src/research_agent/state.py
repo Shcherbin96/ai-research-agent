@@ -15,3 +15,12 @@ class ResearchState(TypedDict, total=False):
     use_scholar: bool
     limit_per_source: int
     top_n: int
+
+    # Self-correction loop. ``verify_support_rate`` carries the verifier's score.
+    # ``synthesize_attempts`` counts how many times synthesize_node has run, so the
+    # graph's conditional edge can stop after the configured retry budget.
+    # ``verify_feedback`` is the human-readable feedback string that synthesize_node
+    # consumes on a retry to fix unsupported claims.
+    verify_support_rate: float
+    verify_feedback: str
+    synthesize_attempts: int

@@ -245,3 +245,8 @@ Still deferred:
 8. ~~pass^k reliability metric~~ ✅
 9. ~~Pairwise usefulness comparison + position-bias mitigation~~ ✅
 10. ~~Web UI (Tailwind + Alpine.js, served by Modal ASGI)~~ ✅
+11. ~~Anthropic prompt caching on read_node (60-80% input cost saving)~~ ✅
+12. ~~Per-query cost tracking with per-node breakdown in API + UI~~ ✅
+13. ~~Self-correction loop: verify_node + conditional edge that retries synthesize on low support~~ ✅
+14. ~~SSE streaming endpoint with live stage timeline + word-by-word synthesize~~ ✅
+15. ~~Shareable brief URLs via Modal Dict + `/brief/<id>` route~~ ✅

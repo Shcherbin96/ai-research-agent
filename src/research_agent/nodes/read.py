@@ -53,8 +53,18 @@ async def _extract_one(
         f"Body:\n{body}"
     )
     async with semaphore:
+        # cache_system=True: read_node's ~1500-token system prompt is identical
+        # across all source-extraction calls in this run. With Anthropic's 5-min
+        # ephemeral cache, the second-through-Nth call pay 0.1x input price on
+        # the system portion — typical 60-80% input cost reduction at this stage.
         raw = await asyncio.to_thread(
-            call_sonnet, system=system, user=user, max_tokens=1024, temperature=0.1
+            call_sonnet,
+            system=system,
+            user=user,
+            max_tokens=1024,
+            temperature=0.1,
+            cache_system=True,
+            node="read",
         )
 
     try:

@@ -42,7 +42,7 @@ async def rank_node(state: ResearchState) -> dict:
         f"Candidates ({len(candidates)} total):\n{_format_candidates(candidates)}"
     )
 
-    raw = call_haiku(system=system, user=user, max_tokens=1024, temperature=0.0)
+    raw = call_haiku(system=system, user=user, max_tokens=1024, temperature=0.0, node="rank")
 
     try:
         payload = extract_json_tag(raw)

@@ -9,6 +9,12 @@ We expose three call helpers and one parsing helper:
 Anthropic does not offer strict JSON output mode, so prompts are written to wrap
 their payload in ``<json>`` tags. ``extract_json_tag`` is forgiving: it falls back
 to extracting the first ``{...}`` or ``[...]`` block if the tag is missing.
+
+Both call helpers accept ``cache_system: bool`` — when True, the system prompt is
+sent with ``cache_control: {"type": "ephemeral"}`` so subsequent calls within the
+5-minute Anthropic cache TTL pay 10% input-token cost on the system portion. This
+matters most for ``read_node`` which fires 5-10 calls per query with the same
+~1500-token system prompt — typical savings are 60-80% on input cost.
 """
 
 from __future__ import annotations
@@ -48,28 +54,102 @@ def _collect_text(content_blocks: list[Any]) -> str:
     return "".join(parts)
 
 
-def _record_usage(model: str, system: str, user: str, response: Any, output: str) -> None:
-    """Attach Anthropic usage data to the current Langfuse observation."""
+# --- Pricing (April 2026, USD per million tokens) ---
+# Verified via context7 mid-implementation. If Anthropic publishes new tiers,
+# update these — they're public, no API call needed at runtime.
+_PRICING = {
+    SONNET_MODEL: {
+        "input": 3.00,
+        "output": 15.00,
+        "cache_write_5m": 3.75,    # cache writes cost 1.25x input
+        "cache_read": 0.30,         # cache reads cost 0.10x input
+    },
+    HAIKU_MODEL: {
+        "input": 1.00,
+        "output": 5.00,
+        "cache_write_5m": 1.25,
+        "cache_read": 0.10,
+    },
+}
+
+
+def _system_with_cache(system: str) -> list[dict[str, Any]]:
+    """Wrap a plain system string into the cacheable block list form."""
+    return [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]
+
+
+def _usage_dict(response: Any) -> dict[str, int]:
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return {"input": 0, "output": 0, "cache_creation": 0, "cache_read": 0}
+    return {
+        "input": getattr(usage, "input_tokens", 0) or 0,
+        "output": getattr(usage, "output_tokens", 0) or 0,
+        "cache_creation": getattr(usage, "cache_creation_input_tokens", 0) or 0,
+        "cache_read": getattr(usage, "cache_read_input_tokens", 0) or 0,
+    }
+
+
+def estimate_cost_usd(model: str, usage: dict[str, int]) -> dict[str, float]:
+    """Return a per-call cost breakdown in USD given a usage dict from Anthropic."""
+    rates = _PRICING.get(model)
+    if rates is None:
+        return {"input": 0.0, "output": 0.0, "cache_write": 0.0, "cache_read": 0.0, "total": 0.0}
+    input_cost = (usage["input"] / 1_000_000) * rates["input"]
+    output_cost = (usage["output"] / 1_000_000) * rates["output"]
+    cache_write = (usage["cache_creation"] / 1_000_000) * rates["cache_write_5m"]
+    cache_read = (usage["cache_read"] / 1_000_000) * rates["cache_read"]
+    return {
+        "input": input_cost,
+        "output": output_cost,
+        "cache_write": cache_write,
+        "cache_read": cache_read,
+        "total": input_cost + output_cost + cache_write + cache_read,
+    }
+
+
+_RUN_USAGE_KEY = "__run_usage__"
+
+
+def get_run_usage() -> dict[str, Any]:
+    """Module-level accumulator. Reset before each pipeline run via ``reset_run_usage``."""
+    return globals().setdefault(_RUN_USAGE_KEY, {"calls": [], "total_cost_usd": 0.0})
+
+
+def reset_run_usage() -> None:
+    globals()[_RUN_USAGE_KEY] = {"calls": [], "total_cost_usd": 0.0}
+
+
+def _record_usage(
+    *,
+    model: str,
+    system: str,
+    user: str,
+    response: Any,
+    output: str,
+    node: str | None = None,
+) -> None:
+    """Attach Anthropic usage to the Langfuse span and to the run-level accumulator."""
+    usage = _usage_dict(response)
+    cost = estimate_cost_usd(model, usage)
+
+    # Langfuse
     try:
-        usage = getattr(response, "usage", None)
-        usage_details = (
-            {
-                "input": getattr(usage, "input_tokens", None),
-                "output": getattr(usage, "output_tokens", None),
-                "cache_creation_input_tokens": getattr(usage, "cache_creation_input_tokens", None),
-                "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", None),
-            }
-            if usage is not None
-            else None
-        )
         update_current_observation(
             model=model,
             input={"system": system, "user": user},
             output=output,
-            usage_details=usage_details,
+            usage_details=usage,
         )
     except Exception:
         pass
+
+    # Run accumulator
+    bucket = get_run_usage()
+    bucket["calls"].append(
+        {"node": node, "model": model, "usage": usage, "cost_usd": cost}
+    )
+    bucket["total_cost_usd"] += cost["total"]
 
 
 @observe(name="call_sonnet")
@@ -79,18 +159,58 @@ def call_sonnet(
     user: str,
     max_tokens: int = 4096,
     temperature: float = 0.2,
+    cache_system: bool = False,
+    node: str | None = None,
 ) -> str:
-    """Synchronous Sonnet completion. Returns concatenated text content."""
+    """Synchronous Sonnet completion. Returns concatenated text content.
+
+    ``cache_system=True`` flags the system prompt as cacheable for 5 minutes.
+    Use this when the same large system prompt is repeated across many calls
+    (e.g. read_node fires it 5-10 times per query).
+    """
     response = get_client().messages.create(
         model=SONNET_MODEL,
         max_tokens=max_tokens,
         temperature=temperature,
-        system=system,
+        system=_system_with_cache(system) if cache_system else system,
         messages=[{"role": "user", "content": user}],
     )
     text = _collect_text(response.content)
-    _record_usage(SONNET_MODEL, system, user, response, text)
+    _record_usage(model=SONNET_MODEL, system=system, user=user, response=response,
+                  output=text, node=node)
     return text
+
+
+@observe(name="stream_sonnet")
+def stream_sonnet(
+    *,
+    system: str,
+    user: str,
+    max_tokens: int = 4096,
+    temperature: float = 0.2,
+    cache_system: bool = False,
+    node: str | None = None,
+):
+    """Yield text chunks from Sonnet as they arrive. Records usage on close."""
+    full_text: list[str] = []
+    final_message: Any = None
+
+    with get_client().messages.stream(
+        model=SONNET_MODEL,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        system=_system_with_cache(system) if cache_system else system,
+        messages=[{"role": "user", "content": user}],
+    ) as stream:
+        for chunk in stream.text_stream:
+            full_text.append(chunk)
+            yield chunk
+        final_message = stream.get_final_message()
+
+    text = "".join(full_text)
+    if final_message is not None:
+        _record_usage(model=SONNET_MODEL, system=system, user=user, response=final_message,
+                      output=text, node=node)
 
 
 @observe(name="call_haiku")
@@ -100,16 +220,19 @@ def call_haiku(
     user: str,
     max_tokens: int = 2048,
     temperature: float = 0.0,
+    cache_system: bool = False,
+    node: str | None = None,
 ) -> str:
     response = get_client().messages.create(
         model=HAIKU_MODEL,
         max_tokens=max_tokens,
         temperature=temperature,
-        system=system,
+        system=_system_with_cache(system) if cache_system else system,
         messages=[{"role": "user", "content": user}],
     )
     text = _collect_text(response.content)
-    _record_usage(HAIKU_MODEL, system, user, response, text)
+    _record_usage(model=HAIKU_MODEL, system=system, user=user, response=response,
+                  output=text, node=node)
     return text
 
 

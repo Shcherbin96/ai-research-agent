@@ -14,6 +14,7 @@ import typer
 
 from research_agent.config import DEFAULT_LIMIT_PER_SOURCE, DEFAULT_TOP_N_SELECTED, load_settings
 from research_agent.graph import build_graph
+from research_agent.llm import get_run_usage, reset_run_usage
 from research_agent.observability import (
     flush as langfuse_flush,
     is_enabled as langfuse_enabled,
@@ -168,12 +169,14 @@ def run_cmd(
     typer.echo(f"Running research pipeline for: {query!r}")
     if langfuse_enabled():
         typer.echo("Langfuse tracing: enabled")
+    reset_run_usage()
     started = time.time()
     try:
         final = asyncio.run(_run(initial_state))
     finally:
         langfuse_flush()
     elapsed = time.time() - started
+    usage = get_run_usage()
 
     brief = final.get("brief")
     if brief is None:
@@ -194,6 +197,10 @@ def run_cmd(
         f"facts={len(final.get('facts') or [])} "
         f"citations={len(brief.citations)} "
         f"errors={len(errors)}"
+    )
+    typer.echo(
+        f"  cost=${usage['total_cost_usd']:.3f} "
+        f"calls={len(usage['calls'])}"
     )
     if verbose and errors:
         for e in errors:
