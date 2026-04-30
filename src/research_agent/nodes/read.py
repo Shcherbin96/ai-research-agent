@@ -90,12 +90,20 @@ async def read_node(state: ResearchState) -> dict:
 
     facts: list[ExtractedFact] = []
     errors: list[str] = list(state.get("errors") or [])
+    n_exceptions = 0
     for c, r in zip(selected, results, strict=False):
         if isinstance(r, Exception):
+            n_exceptions += 1
             errors.append(f"read error for {c.url}: {r!r}")
+            logger.warning("read_node: %s failed: %r", c.url, r)
             continue
         if r is not None and r.thesis:
             facts.append(r)
 
-    logger.info("read_node extracted %d / %d facts", len(facts), len(selected))
+    logger.info(
+        "read_node extracted %d / %d facts (%d exceptions)",
+        len(facts),
+        len(selected),
+        n_exceptions,
+    )
     return {"facts": facts, "errors": errors}

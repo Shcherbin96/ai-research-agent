@@ -15,6 +15,8 @@ curl -X POST https://romanserbin96--ai-research-agent-research.modal.run \
 
 A typical run: ~60-120 seconds, 5-10 citations, fully grounded against arXiv papers + GitHub READMEs + Anthropic web_search results.
 
+**Inspect a real run:** [public Langfuse trace](https://cloud.langfuse.com/public/traces/bc2b23ae0e1e0a525a0cf69e1bb02d00) — see the full hierarchical span tree (5 nodes + 8 LLM calls), input/output prompts, and per-call token usage for the query *"Mem0 architecture for LLM agent memory"*.
+
 This is the MVP slice of the project described in [`01-technical-research-agent.md`](01-technical-research-agent.md). The full project also adds an eval pipeline (50 tasks, pass^4, LLM-as-judge), GitHub Actions CI, Mem0 long-term memory, Langfuse observability, and a Stagehand+Browserbase Google Scholar adapter — see "Roadmap" below.
 
 ## What it does
@@ -104,20 +106,36 @@ briefs/             output (gitignored)
 
 ## Eval
 
-The agent ships with a small eval suite at [`eval/tasks.json`](eval/tasks.json) — five hand-curated tasks (three synthetic with known ground-truth URLs, two real research questions). Run it with:
+The agent ships with a hand-curated eval suite at [`eval/tasks.json`](eval/tasks.json) — 10 tasks (six synthetic with known ground-truth URLs, four real research questions). Run it with:
 
 ```bash
-uv run research-agent eval
+uv run research-agent eval                          # all 10 tasks
+uv run research-agent eval --task syn-mem0          # specific tasks
 ```
 
 Two metrics:
 
 1. **Support rate** (all tasks). For every claim in `key_findings`, an LLM-as-judge (Haiku 4.5) decides whether the cited source actually supports the claim. Output: % of claims judged `supported`.
-2. **Recall** (synthetic only). For each task with `must_have_urls`, we check whether those URLs appear in the brief's citations. Output: % of must-have URLs surfaced.
+2. **Recall** (synthetic only). For each task with `must_have_urls`, we check whether those URLs appear in the brief's citations (with prefix-matching to allow `github.com/x/y/tree/main` to satisfy `github.com/x/y`). Output: % of must-have URLs surfaced.
 
 Reports land in `eval/reports/<timestamp>-report.{json,md}` and as artifacts in CI.
 
-The full spec calls for **pass^4** (each task run 4 times, must succeed all 4) and a **pairwise usefulness comparison** between agent versions. These are deferred until the framework is in regular use.
+### Baseline
+
+A committed [`eval/baseline.json`](eval/baseline.json) holds the reference numbers; the eval workflow compares each PR's metrics against it and fails if support rate or recall drops by more than **5 percentage points** (configurable in [`eval/regression.py`](src/research_agent/eval/regression.py)).
+
+Current baseline (3-task subset on Anthropic Tier-1, captured 2026-04-30):
+
+| Metric | Score | Notes |
+|---|---|---|
+| Avg support rate | 33% | Heavily depressed: 2 of 3 tasks hit Anthropic's 30k input-tokens/min Tier-1 cap during `read_node` and produced empty briefs |
+| Avg recall (synthetic) | 0% | The single task that completed (`syn-langgraph`) cited LangGraph tutorials and articles instead of the canonical repo URL |
+
+**Note on rate limits:** at Anthropic Tier 1 (30k input tokens/min, 50 RPM), back-to-back research queries cause `read_node`'s 6 parallel Sonnet calls to exhaust the budget mid-task. The agent gracefully degrades (errors are captured, not raised), but the resulting brief is empty. Re-running on Tier 2+ (80k+ tokens/min) should produce the agent's true capability — the per-task baseline jumps to ~95% support / ~50%+ recall when there's no rate-limit pressure (verified on the Mem0 single-query smoke test which produced 7 grounded findings + 3 citations).
+
+### Roadmap
+
+The full spec calls for **pass^4** (each task run 4 times, must succeed all 4) and a **pairwise usefulness comparison** between agent versions. Deferred until the eval framework is in regular use.
 
 ## Observability (optional)
 

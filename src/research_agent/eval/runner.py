@@ -51,19 +51,32 @@ class EvalReport:
 
 
 def _normalize(url: str) -> str:
-    return url.lower().rstrip("/").replace("http://", "https://")
+    """Lowercase + drop trailing slash + force https. Drops arXiv version suffixes
+    (``v1``, ``v2``, ...) so ``arxiv.org/abs/2504.19413v1`` matches the canonical
+    ``arxiv.org/abs/2504.19413`` from the eval dataset."""
+    s = url.lower().rstrip("/").replace("http://", "https://")
+    # arxiv.org/abs/<id>v<n> → arxiv.org/abs/<id>
+    if "arxiv.org/abs/" in s:
+        import re
+
+        s = re.sub(r"v\d+$", "", s)
+    return s
 
 
 def _recall(must_have: list[str], brief: Brief) -> tuple[float, list[str], list[str]]:
     if not must_have:
         return 1.0, [], []
     cited = {_normalize(str(c.candidate_url)) for c in brief.citations}
-    candidates_in_findings = " ".join(brief.key_findings) + " " + brief.executive_summary
+    haystack = (" ".join(brief.key_findings) + " " + brief.executive_summary).lower()
     matched: list[str] = []
     missed: list[str] = []
     for url in must_have:
-        n = _normalize(url)
-        if n in cited or n in candidates_in_findings.lower():
+        needle = _normalize(url)
+        # Prefix match for citations: a `must_have` of `github.com/x/y` should
+        # match a citation pointing to `github.com/x/y/tree/main`.
+        cited_match = any(c == needle or c.startswith(needle + "/") for c in cited)
+        text_match = needle in haystack
+        if cited_match or text_match:
             matched.append(url)
         else:
             missed.append(url)
@@ -73,12 +86,15 @@ def _recall(must_have: list[str], brief: Brief) -> tuple[float, list[str], list[
 async def _run_one(task: EvalTask) -> TaskResult:
     started = datetime.now()
     graph = build_graph()
+    # Eval uses smaller fan-out to stay within Anthropic Tier-1 rate limits
+    # (30k input tokens/min). top_n=6 keeps total per-task input tokens under
+    # ~25k, leaving headroom for the judge step.
     state = {
         "query": task.query,
         "errors": [],
         "use_web": True,
-        "limit_per_source": 10,
-        "top_n": 10,
+        "limit_per_source": 6,
+        "top_n": 6,
     }
 
     final = await graph.ainvoke(state)
@@ -142,7 +158,12 @@ async def run_eval(
 
     started = datetime.now()
     results: list[TaskResult] = []
-    for task in tasks:
+    for i, task in enumerate(tasks):
+        if i > 0:
+            # Let the per-minute Anthropic budget recover between tasks. Without
+            # this, back-to-back tasks share the same 30k/min window and the
+            # second task's read_node runs out of headroom for retries.
+            await asyncio.sleep(45)
         logger.info("eval: running %s (%s)", task.id, task.kind)
         try:
             r = await _run_one(task)

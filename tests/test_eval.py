@@ -43,6 +43,28 @@ def test_normalize_url():
     assert _normalize("HTTP://Arxiv.org/abs/X/") == "https://arxiv.org/abs/x"
 
 
+def test_normalize_strips_arxiv_version():
+    assert _normalize("https://arxiv.org/abs/2504.19413v1") == "https://arxiv.org/abs/2504.19413"
+    assert _normalize("http://arxiv.org/abs/2501.12948V2") == "https://arxiv.org/abs/2501.12948"
+
+
+def test_recall_matches_citation_with_subpath():
+    brief = Brief(
+        query="x",
+        executive_summary="s",
+        citations=[
+            Citation(
+                index=1,
+                candidate_url="https://github.com/langchain-ai/langgraph/tree/main",
+                title="LangGraph",
+            ),
+        ],
+    )
+    rate, matched, _ = _recall(["https://github.com/langchain-ai/langgraph"], brief)
+    assert rate == 1.0
+    assert matched
+
+
 def test_recall_matches_cited_url():
     brief = Brief(
         query="x",

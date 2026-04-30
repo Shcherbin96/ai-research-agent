@@ -1,0 +1,143 @@
+{
+  "started_at": "2026-04-30T08:50:39",
+  "finished_at": "2026-04-30T08:58:46",
+  "n_tasks": 3,
+  "avg_support_rate": 0.3333333333333333,
+  "avg_recall": 0.0,
+  "results": [
+    {
+      "task_id": "syn-mem0",
+      "kind": "synthetic",
+      "query": "Mem0 architecture for LLM agent memory",
+      "duration_sec": 70.847478,
+      "n_candidates": 50,
+      "n_selected": 6,
+      "n_facts": 0,
+      "n_findings": 0,
+      "n_citations": 0,
+      "support_rate": 0.0,
+      "recall": 0.0,
+      "matched_must_have": [],
+      "missed_must_have": [],
+      "verdicts": [],
+      "errors": [
+        "read error for http://arxiv.org/abs/2504.19413v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS8bLyzM9qjYuJ1m2de\\'}')",
+        "read error for https://github.com/mem0ai/mem0: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS81sb29zHvtTT5aG9Y\\'}')",
+        "read error for http://arxiv.org/abs/2603.04428v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS8aZ6zASN2FexxXZJp\\'}')",
+        "read error for http://arxiv.org/abs/2604.08224v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS9B9UK7hU6cQRHrDE1\\'}')",
+        "read error for http://arxiv.org/abs/2603.25973v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS9BeUqq4SAVMmYLLi6\\'}')",
+        "read error for https://redis.io/blog/ai-agent-memory-stateful-systems/: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS83AxxcmEwSYS9L6NT\\'}')",
+        "empty brief"
+      ]
+    },
+    {
+      "task_id": "syn-langgraph",
+      "kind": "synthetic",
+      "query": "LangGraph state machine architecture for multi-step agents",
+      "duration_sec": 241.071516,
+      "n_candidates": 41,
+      "n_selected": 6,
+      "n_facts": 6,
+      "n_findings": 8,
+      "n_citations": 4,
+      "support_rate": 1.0,
+      "recall": 0.0,
+      "matched_must_have": [],
+      "missed_must_have": [
+        "https://github.com/langchain-ai/langgraph"
+      ],
+      "verdicts": [
+        {
+          "claim": "LangGraph orchestrates agent interactions by analyzing, routing, and processing user inputs through a graph-structured workflow, ensuring efficient multi-step task execution",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states LangGraph orchestrates agent interactions, analyzes, routes, and processes user inputs efficiently."
+        },
+        {
+          "claim": "The framework uses a unified state object for dynamic updates and consistency across all nodes, providing precise control over task orchestration",
+          "citation_indices": [
+            4
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states LangGraph maintains unified state object for dynamic updates and consistency"
+        },
+        {
+          "claim": "LangGraph supports cyclic edges, nodes, and state management, enabling iterative workflows where agents can loop back for correction or refinement rather than executing only in a straight sequence",
+          "citation_indices": [
+            3
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states LangGraph supports complex loops and conditional branches"
+        },
+        {
+          "claim": "In a machine translation use case, specialized agents (TranslateEnAgent, TranslateFrenchAgent, TranslateJpAgent) were orchestrated via LangGraph, demonstrating improved multilingual accuracy and scalability",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes specialized agents (TranslateEnAgent, TranslateFrenchAgent, TranslateJpAgent) orchestrated via LangGraph demonstrating improved multilingual accuracy and scalability."
+        },
+        {
+          "claim": "For automated bug fixing, a four-step iterative workflow (Code Generation, Code Execution, Code Repair, Code Update) was implemented using LangGraph combined with a ChromaDB vector database for context-aware, memory-driven debugging",
+          "citation_indices": [
+            4
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes four-step workflow with LangGraph and ChromaDB for bug fixing"
+        },
+        {
+          "claim": "LangGraph integrates with Apache Spark to support big data ML workflows, enabling drag-and-drop visual workflow design that is converted into Spark-compatible code for high-performance execution",
+          "citation_indices": [
+            3
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states LangGraph enables visual workflow design converted to Spark-compatible code"
+        },
+        {
+          "claim": "LangGraph-Go, a Go-native implementation, provides type-safe state management via Go generics, deterministic replay via checkpoints, and a unified ChatModel interface supporting OpenAI, Anthropic, Google Gemini, AWS Bedrock, and Ollama",
+          "citation_indices": [
+            5
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly lists all claimed features and LLM providers."
+        },
+        {
+          "claim": "LangGraph-Go includes production-oriented features such as AWS Bedrock multi-region failover, in-memory persistence (MemStore), and functional options for engine configuration, though it remains in alpha with an unstable API",
+          "citation_indices": [
+            5
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly mentions AWS Bedrock multi-region failover, MemStore, functional options, and alpha status with unstable API."
+        }
+      ],
+      "errors": []
+    },
+    {
+      "task_id": "real-mcp-vs-tool-use",
+      "kind": "real",
+      "query": "Differences between Model Context Protocol (MCP) and traditional function-calling tool use",
+      "duration_sec": 70.835396,
+      "n_candidates": 50,
+      "n_selected": 6,
+      "n_facts": 0,
+      "n_findings": 0,
+      "n_citations": 0,
+      "support_rate": 0.0,
+      "recall": null,
+      "matched_must_have": [],
+      "missed_must_have": [],
+      "verdicts": [],
+      "errors": [
+        "read error for https://www.descope.com/blog/post/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSeho1okkQrbxfBuhj6\\'}')",
+        "read error for https://www.prefect.io/resources/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSecyYR3NFcADzKdHJz\\'}')",
+        "read error for https://github.com/andrelandgraf/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfF5wTPWWNFZZ47MhV\\'}')",
+        "read error for https://obot.ai/resources/learning-center/mcp-vs-function-calling/: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfKfGehanb256D7X7c\\'}')",
+        "read error for http://arxiv.org/abs/2508.07575v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfv6iG5qF2T6TAk2VH\\'}')",
+        "read error for http://arxiv.org/abs/2601.11595v2: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfr3Nz8tjnyyvr89cR\\'}')",
+        "empty brief"
+      ]
+    }
+  ]
+}
