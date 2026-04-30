@@ -107,9 +107,10 @@
       ></textarea>
 
       <div class="mt-4 flex items-center justify-between">
-        <div class="text-xs text-stone-500">
+        <div class="text-xs text-stone-500 hidden sm:block">
           <span class="font-mono">⌘ + Enter</span> to run
         </div>
+        <div class="sm:hidden"></div>
         <button
           @click="run()"
           :disabled="loading || !query.trim()"
