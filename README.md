@@ -124,14 +124,15 @@ Reports land in `eval/reports/<timestamp>-report.{json,md}` and as artifacts in 
 
 A committed [`eval/baseline.json`](eval/baseline.json) holds the reference numbers; the eval workflow compares each PR's metrics against it and fails if support rate or recall drops by more than **5 percentage points** (configurable in [`eval/regression.py`](src/research_agent/eval/regression.py)).
 
-Current baseline (3-task subset on Anthropic Tier-1, captured 2026-04-30):
+Current baseline (5-task CI subset on Anthropic Tier-1, captured 2026-04-30 from a real GitHub Actions run):
 
 | Metric | Score | Notes |
 |---|---|---|
-| Avg support rate | 33% | Heavily depressed: 2 of 3 tasks hit Anthropic's 30k input-tokens/min Tier-1 cap during `read_node` and produced empty briefs |
-| Avg recall (synthetic) | 0% | The single task that completed (`syn-langgraph`) cited LangGraph tutorials and articles instead of the canonical repo URL |
+| Avg support rate | **57%** | Three tasks scored 86-100%; two failed entirely on the first call due to Anthropic Tier-1 burst limits |
+| Avg recall (synthetic) | **33%** | Two of three synthetic tasks surfaced their canonical arXiv paper / GitHub repo |
+| Per-task win rate | 3/5 | `syn-mem0`, `syn-vllm`, `real-rag-vs-long-context` cleared; `syn-langgraph` and `real-mcp-vs-tool-use` died on first-task rate-limit burst |
 
-**Note on rate limits:** at Anthropic Tier 1 (30k input tokens/min, 50 RPM), back-to-back research queries cause `read_node`'s 6 parallel Sonnet calls to exhaust the budget mid-task. The agent gracefully degrades (errors are captured, not raised), but the resulting brief is empty. Re-running on Tier 2+ (80k+ tokens/min) should produce the agent's true capability — the per-task baseline jumps to ~95% support / ~50%+ recall when there's no rate-limit pressure (verified on the Mem0 single-query smoke test which produced 7 grounded findings + 3 citations).
+**Note on rate limits:** at Anthropic Tier 1 (30k input tokens/min, 50 RPM), the very first task in a CI run consistently hits the cap during `read_node`'s 6 parallel Sonnet calls and produces an empty brief. The agent gracefully degrades (errors are captured, not raised). Tasks that fire after the budget recovers (45s sleeps between tasks) routinely score 86-100% support. Tier 2+ (80k+ tokens/min) would eliminate this floor.
 
 ### pass^k reliability
 

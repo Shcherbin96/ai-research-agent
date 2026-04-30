@@ -1,15 +1,101 @@
 {
-  "started_at": "2026-04-30T08:50:39",
-  "finished_at": "2026-04-30T08:58:46",
-  "n_tasks": 3,
-  "avg_support_rate": 0.3333333333333333,
-  "avg_recall": 0.0,
+  "started_at": "2026-04-30T07:19:03",
+  "finished_at": "2026-04-30T07:39:42",
+  "n_tasks": 5,
+  "avg_support_rate": 0.5714285714285714,
+  "avg_recall": 0.3333333333333333,
   "results": [
     {
       "task_id": "syn-mem0",
       "kind": "synthetic",
       "query": "Mem0 architecture for LLM agent memory",
-      "duration_sec": 70.847478,
+      "duration_sec": 469.945774,
+      "n_candidates": 50,
+      "n_selected": 6,
+      "n_facts": 6,
+      "n_findings": 8,
+      "n_citations": 5,
+      "support_rate": 1.0,
+      "recall": 0.5,
+      "matched_must_have": [
+        "https://arxiv.org/abs/2504.19413"
+      ],
+      "missed_must_have": [
+        "https://github.com/mem0ai/mem0"
+      ],
+      "verdicts": [
+        {
+          "claim": "Mem0 processes conversational message pairs through two phases\u2014memory extraction and consolidation\u2014and uses an asynchronous summary generation module with a recency window hyperparameter to maintain context-aware, up-to-date memories",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes memory extraction, consolidation, and asynchronous summary generation with recency window."
+        },
+        {
+          "claim": "Mem0g extends the base architecture with a directed labeled graph representation where entities are nodes and relationships are edges, enabling richer multi-hop relational recall and scoring ~2% higher than base Mem0 on LOCOMO",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states graph memory achieves ~2% higher score than base Mem0 on LOCOMO"
+        },
+        {
+          "claim": "Mem0 attains 91% lower p95 latency and saves more than 90% in token cost compared to full-context approaches, making it practical for production deployment",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states both metrics in abstract and introduction."
+        },
+        {
+          "claim": "CraniMem, a neurocognitively inspired alternative, couples goal-conditioned gating and utility tagging with a bounded episodic buffer and a structured long-term knowledge graph, outperforming both Vanilla RAG and Mem0 under clean and noisy (distractor-injected) conditions",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes CraniMem's architecture and performance claims."
+        },
+        {
+          "claim": "CraniMem's scheduled consolidation loop replays high-utility memory traces and prunes low-utility items via importance weighting and temporal decay, demonstrating that selective forgetting outperforms both unlimited retention and aggressive compression",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes CraniMem's consolidation loop and selective forgetting superiority."
+        },
+        {
+          "claim": "A unified taxonomy of LLM agent externalization frames memory as state externalization across time, complemented by skills (procedural expertise) and protocols (interaction structure), all coordinated by a harness engineering layer",
+          "citation_indices": [
+            4
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states the unified taxonomy with all four components"
+        },
+        {
+          "claim": "Current long-term memory benchmarks largely test shallow fact retrieval; the Memora benchmark and FAMA metric expose deeper failures by spanning weeks-to-months of conversation and penalizing reliance on obsolete or invalidated memories\u2014under which memory agents show only marginal improvements",
+          "citation_indices": [
+            5
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes Memora benchmark, FAMA metric, weeks-to-months conversations, penalizing obsolete memories, and marginal improvements."
+        },
+        {
+          "claim": "A hardware-level approach persists per-agent KV caches to disk in 4-bit quantized format, reducing time-to-first-token by up to 136\u00d7 and fitting 4\u00d7 more agent contexts into fixed device memory than FP16, offering a complementary low-level memory strategy for edge deployments",
+          "citation_indices": [
+            6
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes all claim components with matching metrics."
+        }
+      ],
+      "errors": []
+    },
+    {
+      "task_id": "syn-langgraph",
+      "kind": "synthetic",
+      "query": "LangGraph state machine architecture for multi-step agents",
+      "duration_sec": 69.582748,
       "n_candidates": 50,
       "n_selected": 6,
       "n_facts": 0,
@@ -21,95 +107,98 @@
       "missed_must_have": [],
       "verdicts": [],
       "errors": [
-        "read error for http://arxiv.org/abs/2504.19413v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS8bLyzM9qjYuJ1m2de\\'}')",
-        "read error for https://github.com/mem0ai/mem0: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS81sb29zHvtTT5aG9Y\\'}')",
-        "read error for http://arxiv.org/abs/2603.04428v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS8aZ6zASN2FexxXZJp\\'}')",
-        "read error for http://arxiv.org/abs/2604.08224v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS9B9UK7hU6cQRHrDE1\\'}')",
-        "read error for http://arxiv.org/abs/2603.25973v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS9BeUqq4SAVMmYLLi6\\'}')",
-        "read error for https://redis.io/blog/ai-agent-memory-stateful-systems/: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZS83AxxcmEwSYS9L6NT\\'}')",
+        "read error for https://dev.to/jamesli/langgraph-state-machines-managing-complex-agent-task-flows-in-production-36f4: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZYG27cgZs1U8QXezj9\\'}')",
+        "read error for http://arxiv.org/abs/2412.01490v4: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZZJ5RPaFu5MnQ2rZhJ\\'}')",
+        "read error for https://github.com/langchain-ai/langgraph: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZYGwvnNGEMdqKMPymw\\'}')",
+        "read error for http://arxiv.org/abs/2412.03801v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZZPeHg3pvqTaH4mCVy\\'}')",
+        "read error for https://academy.langchain.com/courses/intro-to-langgraph: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZYnZ9zfnmM2ZQCVd1i\\'}')",
+        "read error for https://medium.com/@ashutoshsharmaengg/getting-started-with-langgraph-a-beginners-guide-to-building-intelligent-workflows-67eeee0899d0: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZZYsiTifDdn3M3oPfHy\\'}')",
         "empty brief"
       ]
     },
     {
-      "task_id": "syn-langgraph",
+      "task_id": "syn-vllm",
       "kind": "synthetic",
-      "query": "LangGraph state machine architecture for multi-step agents",
-      "duration_sec": 241.071516,
-      "n_candidates": 41,
+      "query": "vLLM PagedAttention serving framework architecture",
+      "duration_sec": 195.186446,
+      "n_candidates": 44,
       "n_selected": 6,
       "n_facts": 6,
       "n_findings": 8,
-      "n_citations": 4,
+      "n_citations": 5,
       "support_rate": 1.0,
-      "recall": 0.0,
-      "matched_must_have": [],
+      "recall": 0.5,
+      "matched_must_have": [
+        "https://arxiv.org/abs/2309.06180"
+      ],
       "missed_must_have": [
-        "https://github.com/langchain-ai/langgraph"
+        "https://github.com/vllm-project/vllm"
       ],
       "verdicts": [
         {
-          "claim": "LangGraph orchestrates agent interactions by analyzing, routing, and processing user inputs through a graph-structured workflow, ensuring efficient multi-step task execution",
+          "claim": "PagedAttention divides the KV cache into fixed-size blocks stored in non-contiguous paged memory, directly inspired by OS virtual memory management, enabling near-zero memory waste",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states PagedAttention divides KV cache into blocks, inspired by OS virtual memory paging, achieving near-zero waste."
+        },
+        {
+          "claim": "Existing LLM serving systems waste significant memory: profiling shows only 20.4%\u201338.2% of KV cache memory is used for actual token states in prior systems",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Figure 2 shows token states at 20.4%-38.2% across systems"
+        },
+        {
+          "claim": "vLLM improves throughput by 2\u20134\u00d7 over FasterTransformer and Orca baselines at the same latency level, evaluated on GPT, OPT, and LLaMA model families",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states vLLM improves throughput 2-4\u00d7 over FasterTransformer and Orca"
+        },
+        {
+          "claim": "In head-to-head benchmarking on 4\u00d7 NVIDIA A100 80GB GPUs, vLLM achieves up to 24\u00d7 higher throughput than HuggingFace TGI under high-concurrency workloads via PagedAttention",
           "citation_indices": [
             2
           ],
           "verdict": "supported",
-          "reason": "Source explicitly states LangGraph orchestrates agent interactions, analyzes, routes, and processes user inputs efficiently."
+          "reason": "Source explicitly states vLLM achieves 24x higher throughput via PagedAttention"
         },
         {
-          "claim": "The framework uses a unified state object for dynamic updates and consistency across all nodes, providing precise control over task orchestration",
-          "citation_indices": [
-            4
-          ],
-          "verdict": "supported",
-          "reason": "Source explicitly states LangGraph maintains unified state object for dynamic updates and consistency"
-        },
-        {
-          "claim": "LangGraph supports cyclic edges, nodes, and state management, enabling iterative workflows where agents can loop back for correction or refinement rather than executing only in a straight sequence",
-          "citation_indices": [
-            3
-          ],
-          "verdict": "supported",
-          "reason": "Source explicitly states LangGraph supports complex loops and conditional branches"
-        },
-        {
-          "claim": "In a machine translation use case, specialized agents (TranslateEnAgent, TranslateFrenchAgent, TranslateJpAgent) were orchestrated via LangGraph, demonstrating improved multilingual accuracy and scalability",
+          "claim": "vLLM excels in high-throughput batch scenarios while HuggingFace TGI demonstrates lower tail latencies for interactive single-user scenarios, suggesting workload-dependent framework selection",
           "citation_indices": [
             2
           ],
           "verdict": "supported",
-          "reason": "Source explicitly describes specialized agents (TranslateEnAgent, TranslateFrenchAgent, TranslateJpAgent) orchestrated via LangGraph demonstrating improved multilingual accuracy and scalability."
+          "reason": "Source explicitly states vLLM excels in high-throughput batch scenarios, TGI has lower tail latencies for interactive single-user scenarios, and recommends workload-dependent framework selection."
         },
         {
-          "claim": "For automated bug fixing, a four-step iterative workflow (Code Generation, Code Execution, Code Repair, Code Update) was implemented using LangGraph combined with a ChromaDB vector database for context-aware, memory-driven debugging",
+          "claim": "The vLLM engine combines block-level memory management with preemptive request scheduling and supports distributed serving via tensor parallelism across multiple GPUs",
+          "citation_indices": [
+            1,
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes PagedAttention block-level memory management, request scheduling, and tensor parallelism support."
+        },
+        {
+          "claim": "Core implementation components include PagedAttention memory management, continuous batching, and custom CUDA kernels for high-speed processing",
           "citation_indices": [
             4
           ],
           "verdict": "supported",
-          "reason": "Source explicitly describes four-step workflow with LangGraph and ChromaDB for bug fixing"
+          "reason": "Source explicitly lists all three components mentioned in claim"
         },
         {
-          "claim": "LangGraph integrates with Apache Spark to support big data ML workflows, enabling drag-and-drop visual workflow design that is converted into Spark-compatible code for high-performance execution",
+          "claim": "A plug-in ecosystem (e.g., vLLM Hook) extends vLLM with passive probing and active intervention of internal model states such as attention heads and activations, enabling use cases like prompt injection detection and activation steering",
           "citation_indices": [
             3
           ],
           "verdict": "supported",
-          "reason": "Source explicitly states LangGraph enables visual workflow design converted to Spark-compatible code"
-        },
-        {
-          "claim": "LangGraph-Go, a Go-native implementation, provides type-safe state management via Go generics, deterministic replay via checkpoints, and a unified ChatModel interface supporting OpenAI, Anthropic, Google Gemini, AWS Bedrock, and Ollama",
-          "citation_indices": [
-            5
-          ],
-          "verdict": "supported",
-          "reason": "Source explicitly lists all claimed features and LLM providers."
-        },
-        {
-          "claim": "LangGraph-Go includes production-oriented features such as AWS Bedrock multi-region failover, in-memory persistence (MemStore), and functional options for engine configuration, though it remains in alpha with an unstable API",
-          "citation_indices": [
-            5
-          ],
-          "verdict": "supported",
-          "reason": "Source explicitly mentions AWS Bedrock multi-region failover, MemStore, functional options, and alpha status with unstable API."
+          "reason": "Source explicitly describes vLLM Hook enabling passive probing and active intervention of attention heads, activations, with prompt injection detection and activation steering use cases."
         }
       ],
       "errors": []
@@ -118,7 +207,7 @@
       "task_id": "real-mcp-vs-tool-use",
       "kind": "real",
       "query": "Differences between Model Context Protocol (MCP) and traditional function-calling tool use",
-      "duration_sec": 70.835396,
+      "duration_sec": 71.14894,
       "n_candidates": 50,
       "n_selected": 6,
       "n_facts": 0,
@@ -130,14 +219,88 @@
       "missed_must_have": [],
       "verdicts": [],
       "errors": [
-        "read error for https://www.descope.com/blog/post/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSeho1okkQrbxfBuhj6\\'}')",
-        "read error for https://www.prefect.io/resources/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSecyYR3NFcADzKdHJz\\'}')",
-        "read error for https://github.com/andrelandgraf/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfF5wTPWWNFZZ47MhV\\'}')",
-        "read error for https://obot.ai/resources/learning-center/mcp-vs-function-calling/: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfKfGehanb256D7X7c\\'}')",
-        "read error for http://arxiv.org/abs/2508.07575v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfv6iG5qF2T6TAk2VH\\'}')",
-        "read error for http://arxiv.org/abs/2601.11595v2: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZSfr3Nz8tjnyyvr89cR\\'}')",
+        "read error for https://www.descope.com/blog/post/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa1Z1a4YRRR9HApBnRS\\'}')",
+        "read error for https://www.prefect.io/resources/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa1YT6HrsaAHgh2E7Nq\\'}')",
+        "read error for https://medium.com/@alekseyrubtsov/why-mcp-is-superior-to-tools-and-function-calling-73d5c61981b7: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa26iJh8U4kjmQKxq18\\'}')",
+        "read error for https://github.com/andrelandgraf/mcp-vs-function-calling: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa25rTooXXNLqoYPpRA\\'}')",
+        "read error for http://arxiv.org/abs/2508.07575v1: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa2bJ2EJH6FEjihcvnf\\'}')",
+        "read error for http://arxiv.org/abs/2601.11595v2: RateLimitError('Error code: 429 - {\\'type\\': \\'error\\', \\'error\\': {\\'type\\': \\'rate_limit_error\\', \\'message\\': \"This request would exceed your organization\\'s rate limit of 30,000 input tokens per minute (org: 95d9c96e-934f-4731-b57a-c3ee4e84081b, model: claude-sonnet-4-6). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Please reduce the prompt length or the maximum tokens requested, or try again later. You may also contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"}, \\'request_id\\': \\'req_011CaZa2f9h4vjYNBG1q5M5c\\'}')",
         "empty brief"
       ]
+    },
+    {
+      "task_id": "real-rag-vs-long-context",
+      "kind": "real",
+      "query": "RAG vs long-context windows: when does each approach win in 2025-2026?",
+      "duration_sec": 213.713125,
+      "n_candidates": 47,
+      "n_selected": 6,
+      "n_facts": 6,
+      "n_findings": 7,
+      "n_citations": 3,
+      "support_rate": 0.8571428571428571,
+      "recall": null,
+      "matched_must_have": [],
+      "missed_must_have": [],
+      "verdicts": [
+        {
+          "claim": "Order-preserving RAG (OP-RAG), which places retrieved chunks in their original document order rather than by relevance rank, achieves 44.43 F1 with Llama3.1-70B using only 16K tokens, versus 34.32 F1 for the same model consuming its full 128K context window \u2014 a substantial quality gain at a fraction of the token cost",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states exact F1 scores and token counts claimed."
+        },
+        {
+          "claim": "Answer quality in RAG follows an inverted-U curve as the number of retrieved chunks grows: performance rises initially, peaks at a 'sweet point,' then declines as noise and context overload accumulate",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly describes inverted-U curve pattern with sweet points"
+        },
+        {
+          "claim": "Across 20 LLMs tested at context lengths from 2K to 128K tokens, the majority first improve and then degrade in RAG accuracy as context length increases, meaning longer retrieval is not a free lunch",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states majority of models first increase then decrease RAG performance as context length increases"
+        },
+        {
+          "claim": "Only a small number of state-of-the-art models \u2014 including GPT-4o, Claude 3.5, and Gemini 1.5 \u2014 can maintain consistent RAG accuracy above 64K tokens; most open-source and older commercial models cannot",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states only handful of state-of-the-art LLMs maintain consistent accuracy above 64K tokens"
+        },
+        {
+          "claim": "Models fail at long RAG contexts in qualitatively distinct ways: some produce wrong answers while others refuse to respond entirely \u2014 for example, Claude 3 Sonnet frequently refused due to perceived copyright concerns at longer context lengths",
+          "citation_indices": [
+            2
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly states models fail in distinct ways: some provide incorrect answers, others refuse due to copyright concerns."
+        },
+        {
+          "claim": "A comparative evaluation framework revisiting long-context vs. RAG trade-offs confirms that neither approach dominates universally, and that task type and document structure are key moderating variables",
+          "citation_indices": [
+            3
+          ],
+          "verdict": "unsupported",
+          "reason": "could not fetch any source body"
+        },
+        {
+          "claim": "RAG's token efficiency advantage is practically significant for cost and latency: OP-RAG can deliver superior answer quality while consuming orders-of-magnitude fewer tokens than feeding an entire long document to a frontier model",
+          "citation_indices": [
+            1
+          ],
+          "verdict": "supported",
+          "reason": "Source explicitly demonstrates OP-RAG achieves superior quality with fewer tokens"
+        }
+      ],
+      "errors": []
     }
   ]
 }
