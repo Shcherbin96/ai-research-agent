@@ -21,6 +21,31 @@ A typical run: ~60-120 seconds, 5-10 citations, fully grounded against arXiv pap
 
 **Inspect a real run:** [public Langfuse trace](https://cloud.langfuse.com/public/traces/bc2b23ae0e1e0a525a0cf69e1bb02d00) — see the full hierarchical span tree (5 nodes + 8 LLM calls), input/output prompts, and per-call token usage for the query *"Mem0 architecture for LLM agent memory"*.
 
+## What it looks like
+
+A real run on the query **"RAG vs long-context tradeoffs"** — ~3 minutes, 8 grounded findings, 7 citations to arXiv papers, **$0.148 total cost**:
+
+<img width="900" alt="Comparison matrix in the live UI — Long-Context vs Chunk-RAG vs Summarization-RAG vs Vendi-RAG vs Tree-RAG, every cell tied to a numbered citation" src="https://github.com/user-attachments/assets/b09f45ae-3916-48f9-8cc5-d7747430b332" />
+
+<details>
+<summary><strong>More screenshots</strong> — input page, executive summary + key findings, citations</summary>
+
+<br/>
+
+**Input page** with the query box, example queries, and the start of the result card with run-level stats (elapsed time, candidate / selected / facts / findings / citations counts, cost, share-link button):
+
+<img width="900" alt="Input page with query and stats" src="https://github.com/user-attachments/assets/e1bdce9d-c5f6-4418-afbe-b4028fd4e308" />
+
+**Executive summary + key findings** — every claim ends with a `[n]` citation marker tied to a fact:
+
+<img width="900" alt="Executive summary and key findings with inline citations" src="https://github.com/user-attachments/assets/74acf75e-082d-4a2d-9f57-5b951de6e78a" />
+
+**Citations section** — every numbered marker resolves to a real, clickable arXiv URL plus a verbatim quote pulled from the source:
+
+<img width="900" alt="Citations section with arXiv links" src="https://github.com/user-attachments/assets/587accb7-9ce1-4fb8-b1b1-120b5fefb72c" />
+
+</details>
+
 This is the MVP slice of the project described in [`01-technical-research-agent.md`](01-technical-research-agent.md). The full project also adds an eval pipeline (50 tasks, pass^4, LLM-as-judge), GitHub Actions CI, Mem0 long-term memory, Langfuse observability, and a Stagehand+Browserbase Google Scholar adapter — see "Roadmap" below.
 
 ## What it does
