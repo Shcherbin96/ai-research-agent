@@ -148,15 +148,25 @@ Reports land in `eval/reports/<timestamp>-report.{json,md}` and as artifacts in 
 
 A committed [`eval/baseline.json`](eval/baseline.json) holds the reference numbers; the eval workflow compares each PR's metrics against it and fails if support rate or recall drops by more than **5 percentage points** (configurable in [`eval/regression.py`](src/research_agent/eval/regression.py)).
 
-Current baseline (5-task CI subset on Anthropic Tier-1, captured 2026-04-30 from a real GitHub Actions run):
+Current baseline (5-task subset, captured 2026-05-01 in `fast` mode):
 
 | Metric | Score | Notes |
 |---|---|---|
-| Avg support rate | **57%** | Three tasks scored 86-100%; two failed entirely on the first call due to Anthropic Tier-1 burst limits |
-| Avg recall (synthetic) | **33%** | Two of three synthetic tasks surfaced their canonical arXiv paper / GitHub repo |
-| Per-task win rate | 3/5 | `syn-mem0`, `syn-vllm`, `real-rag-vs-long-context` cleared; `syn-langgraph` and `real-mcp-vs-tool-use` died on first-task rate-limit burst |
+| Avg support rate | **91.67%** | LLM-as-judge (Haiku 4.5) verdicts across 38 individual claims |
+| Avg recall (synthetic) | **33%** | Hard-coded canonical URL match; one synthetic task (`syn-langgraph`) surfaced LangGraph tutorials and articles instead of the specific repo |
+| Per-task pass rate | 5/5 | All five tasks produced 6-8 findings each |
 
-**Note on rate limits:** at Anthropic Tier 1 (30k input tokens/min, 50 RPM), the very first task in a CI run consistently hits the cap during `read_node`'s 6 parallel Sonnet calls and produces an empty brief. The agent gracefully degrades (errors are captured, not raised). Tasks that fire after the budget recovers (45s sleeps between tasks) routinely score 86-100% support. Tier 2+ (80k+ tokens/min) would eliminate this floor.
+**Per-task breakdown:**
+
+| Task | Kind | Findings | Support | Recall |
+|---|---|---:|---:|---:|
+| `syn-mem0` | synthetic | 8 | 88% | 50% |
+| `syn-langgraph` | synthetic | 8 | **100%** | 0% |
+| `syn-vllm` | synthetic | 8 | **100%** | 50% |
+| `real-mcp-vs-tool-use` | real | 8 | 88% | — |
+| `real-rag-vs-long-context` | real | 6 | 83% | — |
+
+**Why fast mode for the baseline:** the demo defaults to `fast` mode (Haiku 4.5 for `read_node` + `web_search`, Sonnet 4.6 for `plan` + `synthesize`) so it runs reliably on Anthropic Tier-1 (30k input tokens/min). Switching everything to Sonnet via `--quality high` gives marginally better verbatim quote extraction at ~3× cost — when measured, single-task numbers track the fast-mode numbers within ~5pp.
 
 ### pass^k reliability
 
